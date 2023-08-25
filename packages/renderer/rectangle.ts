@@ -167,7 +167,7 @@ export interface RectangleOptions {
   padding?: Padding
   rowGap?: number
 }
-export default function rectangle(options: RectangleOptions): HTMLCanvasElement | undefined {
+export default async function rectangle(options: RectangleOptions): Promise<HTMLCanvasElement | undefined> {
   const { text, borderStyle = {}, backgroundColor = '#ffffff00', fontStyle = {}, padding = 0, rowGap = 0 } = options
   const { radius: borderRadius = 0 } = borderStyle
   const { size: fontSize = '12px' } = fontStyle
