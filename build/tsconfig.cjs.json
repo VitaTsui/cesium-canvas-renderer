@@ -1,0 +1,11 @@
+{  
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "declaration": true,
+    "declarationMap": false,
+    "sourceMap": false,
+    "outDir": "../lib"
+  },
+}
