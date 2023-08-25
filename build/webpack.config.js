@@ -9,7 +9,7 @@ const pkg = require('../package.json')
 
 const config = {
   mode: devMode ? 'development' : 'production',
-  entry: ['./tools/index.ts'],
+  entry: ['./packages/index.ts'],
   output: {
     path: path.resolve(__dirname, '../dist'),
     filename: devMode ? 'hsu-cesium-uilts.js' : 'hsu-cesium-uilts.min.js',
