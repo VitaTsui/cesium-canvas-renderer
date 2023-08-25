@@ -8,6 +8,9 @@
   "main": "lib/index.js",
   "module": "es/index.js",
   "unpkg": "dist/hsu-cesium-uilts.min.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "es",
     "lib",
