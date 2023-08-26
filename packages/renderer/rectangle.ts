@@ -4,6 +4,8 @@ interface FontStyle {
   color?: string
   textAlign?: CanvasTextAlign
   textBaseline?: CanvasTextBaseline
+  padding?: Padding
+  rowGap?: number
 }
 
 interface BorderStyle {
@@ -49,10 +51,7 @@ function drawCtx(options: DrawCtxOptions) {
   if (Array.isArray(radius)) {
     ;[lt, rt, rb, lb] = radius
   } else {
-    lt = radius
-    lb = radius
-    rt = radius
-    rb = radius
+    ;[lt, rt, rb, lb] = [radius, radius, radius, radius]
   }
 
   // 左上圆角
@@ -93,10 +92,7 @@ function drawBorder(options: DrawBorderOptions) {
   if (Array.isArray(borderRadius)) {
     ;[lt, rt, rb, lb] = borderRadius
   } else {
-    lt = borderRadius
-    lb = borderRadius
-    rt = borderRadius
-    rb = borderRadius
+    ;[lt, rt, rb, lb] = [borderRadius, borderRadius, borderRadius, borderRadius]
   }
 
   const path = new Path2D()
@@ -155,63 +151,83 @@ function drawText(options: DrawTextOptions) {
  * 绘制矩形 canvas
  */
 export interface RectangleOptions {
-  text: string | string[]
+  content?: string | string[]
   borderStyle?: BorderStyle
   backgroundColor?: string
   fontStyle?: FontStyle
-  padding?: Padding
-  rowGap?: number
+  width?: number | 'auto'
+  height?: number | 'auto'
 }
 export default async function rectangle(options: RectangleOptions): Promise<HTMLCanvasElement | undefined> {
-  const { text, borderStyle = {}, backgroundColor = '#ffffff00', fontStyle = {}, padding = 0, rowGap = 0 } = options
+  const {
+    content,
+    borderStyle = {},
+    backgroundColor = '#ffffff00',
+    fontStyle = {},
+    width: canvasWidth = 'auto',
+    height: canvasHeight = 'auto'
+  } = options
   const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
-  const { size: fontSize = '12px' } = fontStyle
-
-  if (Array.isArray(text)) {
-    text.filter(Boolean)
-  }
-  if (!text || !text.length) return
+  const { size: fontSize = '12px', padding = 0, rowGap = 0 } = fontStyle
 
   let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
   if (Array.isArray(padding)) {
     if (padding.length === 2) {
-      ;[_top, _bottom] = padding
-      ;[_right, _left] = padding
+      ;[_top, _left] = padding
+      ;[_bottom, _right] = padding
     } else {
       ;[_top, _right, _bottom, _left] = padding
     }
   } else {
-    _top = padding
-    _right = padding
-    _bottom = padding
-    _left = padding
+    ;[_top, _right, _bottom, _left] = [padding, padding, padding, padding]
   }
-  _top += borderWidth
-  _right += borderWidth
-  _bottom += borderWidth
-  _left += borderWidth
+  if (borderWidth) {
+    _top += borderWidth
+    _right += borderWidth
+    _bottom += borderWidth
+    _left += borderWidth
+  }
 
-  const _maxTextLength = Array.isArray(text)
-    ? get_string_width(text.sort((a, b) => b.length - a.length)[0])
-    : get_string_width(text)
-  const _matches = +(fontSize.match(/(\d+)/)?.[0] ?? '12')
-  let _rows = 1
-  if (Array.isArray(text)) {
-    _rows = text.length
+  let [width, height] = [0, 0]
+  if (typeof canvasWidth === 'number') {
+    width = canvasWidth
   }
-  const width = _maxTextLength * _matches + (_left + _right)
-  const height = _rows * _matches + (_top + _bottom) + (_rows - 1) * rowGap
+  if (typeof canvasHeight === 'number') {
+    height = canvasHeight
+  }
+  if (content && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
+    const _matches = +(fontSize.match(/(\d+)/)?.[0] ?? '12')
+
+    if (canvasWidth === 'auto') {
+      const _maxTextLength = Array.isArray(content)
+        ? get_string_width(content.sort((a, b) => b.length - a.length)[0])
+        : get_string_width(content)
+      width = _maxTextLength * _matches + (_left + _right)
+    }
+    if (canvasHeight === 'auto') {
+      let _rows = 1
+      if (Array.isArray(content)) {
+        content.filter(Boolean)
+        _rows = content.length
+      }
+      height = _rows * _matches + (_top + _bottom) + (_rows - 1) * rowGap
+    }
+  }
 
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
   canvas.width = width
   canvas.height = height
 
-  drawCtx({ ctx, radius: borderRadius, width, height, backgroundColor })
+  if (width && height) {
+    drawCtx({ ctx, radius: borderRadius, width, height, backgroundColor })
 
-  drawBorder({ ctx, width, height, borderStyle })
+    drawBorder({ ctx, width, height, borderStyle })
 
-  drawText({ ctx, text, fontStyle, top: _top, left: _left, rowGap })
+    if (content) {
+      drawText({ ctx, text: content, fontStyle, top: _top, left: _left, rowGap })
+    }
+  }
 
   return canvas
 }
