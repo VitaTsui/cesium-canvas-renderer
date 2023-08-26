@@ -4,6 +4,8 @@ interface FontStyle {
   color?: string
   textAlign?: CanvasTextAlign
   textBaseline?: CanvasTextBaseline
+  padding?: Padding
+  rowGap?: number
 }
 
 interface BorderStyle {
@@ -41,22 +43,17 @@ interface DrawCtxOptions {
 function drawCtx(options: DrawCtxOptions) {
   const { ctx, width, height, radius = 0, backgroundColor = '#ffffff00' } = options
 
+  const PI = Math.PI
+
   const [x, y] = [0, 0]
 
-  let lt: number = 0
-  let lb: number = 0
-  let rt: number = 0
-  let rb: number = 0
+  let [lt, rt, rb, lb] = [0, 0, 0, 0]
   if (Array.isArray(radius)) {
     ;[lt, rt, rb, lb] = radius
   } else {
-    lt = radius
-    lb = radius
-    rt = radius
-    rb = radius
+    ;[lt, rt, rb, lb] = [radius, radius, radius, radius]
   }
 
-  const PI = Math.PI
   // 左上圆角
   ctx.beginPath()
   ctx.arc(x + lt, y + lt, lt, PI, PI * 1.5)
@@ -87,32 +84,27 @@ interface DrawBorderOptions {
 function drawBorder(options: DrawBorderOptions) {
   const { ctx, width, height, borderStyle = {} } = options
   const { color: borderColor = '#fff', width: borderWidth = 0, radius: borderRadius = 0 } = borderStyle
+  const PI = Math.PI
 
   const [x, y] = [0, 0]
 
-  let lt: number = 0
-  let lb: number = 0
-  let rt: number = 0
-  let rb: number = 0
+  let [lt, rt, rb, lb] = [0, 0, 0, 0]
   if (Array.isArray(borderRadius)) {
     ;[lt, rt, rb, lb] = borderRadius
   } else {
-    lt = borderRadius
-    lb = borderRadius
-    rt = borderRadius
-    rb = borderRadius
+    ;[lt, rt, rb, lb] = [borderRadius, borderRadius, borderRadius, borderRadius]
   }
 
   const path = new Path2D()
   path.moveTo(x + lt, y)
   path.lineTo(x + width - lt, y)
-  path.arc(x + width - lt, y + lt, lt, (Math.PI / 180) * 270, 0, false)
+  path.arc(x + width - lt, y + lt, lt, PI * 1.5, 0, false)
   path.lineTo(x + width, y + height - lb)
-  path.arc(x + width - lb, y + height - lb, lb, 0, (Math.PI / 180) * 90, false)
+  path.arc(x + width - lb, y + height - lb, lb, 0, PI * 0.5, false)
   path.lineTo(x + rt, y + height)
-  path.arc(x + rt, y + height - rt, rt, (Math.PI / 180) * 90, (Math.PI / 180) * 180, false)
+  path.arc(x + rt, y + height - rt, rt, PI * 0.5, PI, false)
   path.lineTo(x, y + rb)
-  path.arc(x + rb, y + rb, rb, (Math.PI / 180) * 180, (Math.PI / 180) * 270, false)
+  path.arc(x + rb, y + rb, rb, PI, PI * 1.5, false)
 
   ctx.lineWidth = borderWidth
   ctx.strokeStyle = borderColor
@@ -126,18 +118,17 @@ interface DrawTextOptions {
   ctx: CanvasRenderingContext2D
   text: string | string[]
   fontStyle?: FontStyle
-  width: number
-  height: number
   top?: number
+  left?: number
   rowGap?: number
 }
 function drawText(options: DrawTextOptions) {
-  const { ctx, text, width, height, fontStyle = {}, top = 0, rowGap = 0 } = options
+  const { ctx, text, fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
   const {
     size: fontSize = '12px',
     family: fontFamily = '微软雅黑',
     color = '#000',
-    textAlign = 'center',
+    textAlign = 'left',
     textBaseline = 'middle'
   } = fontStyle
 
@@ -149,10 +140,10 @@ function drawText(options: DrawTextOptions) {
     text.forEach((item, idx) => {
       const _matches = +(fontSize.match(/(\d+)/)?.[0] ?? '12')
       const _height = _matches * (idx + 1) + top + (idx !== 0 ? rowGap : 0)
-      ctx.fillText(item, width / 2, _height)
+      ctx.fillText(item, left, _height)
     })
   } else {
-    ctx.fillText(text, width / 2, height / 2)
+    ctx.fillText(text, left, top)
   }
 }
 
@@ -160,67 +151,83 @@ function drawText(options: DrawTextOptions) {
  * 绘制矩形 canvas
  */
 export interface RectangleOptions {
-  text: string | string[]
+  content?: string | string[]
   borderStyle?: BorderStyle
   backgroundColor?: string
   fontStyle?: FontStyle
-  padding?: Padding
-  rowGap?: number
+  width?: number | 'auto'
+  height?: number | 'auto'
 }
 export default async function rectangle(options: RectangleOptions): Promise<HTMLCanvasElement | undefined> {
-  const { text, borderStyle = {}, backgroundColor = '#ffffff00', fontStyle = {}, padding = 0, rowGap = 0 } = options
-  const { radius: borderRadius = 0 } = borderStyle
-  const { size: fontSize = '12px' } = fontStyle
+  const {
+    content,
+    borderStyle = {},
+    backgroundColor = '#ffffff00',
+    fontStyle = {},
+    width: canvasWidth = 'auto',
+    height: canvasHeight = 'auto'
+  } = options
+  const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
+  const { size: fontSize = '12px', padding = 0, rowGap = 0 } = fontStyle
 
-  if (Array.isArray(text)) {
-    text.filter(Boolean)
-  }
-  if (!text || !text.length) return
-
-  let _rows = 1
-  if (Array.isArray(text)) {
-    _rows = text.length
-  }
-
-  const _maxTextLength = Array.isArray(text)
-    ? get_string_width(text.sort((a, b) => b.length - a.length)[0])
-    : get_string_width(text)
-
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-
-  let _top: number = 0
-  let _right: number = 0
-  let _bottom: number = 0
-  let _left: number = 0
+  let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
   if (Array.isArray(padding)) {
     if (padding.length === 2) {
-      _top = padding[0]
-      _right = padding[1]
-      _bottom = padding[0]
-      _left = padding[1]
+      ;[_top, _left] = padding
+      ;[_bottom, _right] = padding
     } else {
       ;[_top, _right, _bottom, _left] = padding
     }
   } else {
-    _top = padding
-    _right = padding
-    _bottom = padding
-    _left = padding
+    ;[_top, _right, _bottom, _left] = [padding, padding, padding, padding]
+  }
+  if (borderWidth) {
+    _top += borderWidth
+    _right += borderWidth
+    _bottom += borderWidth
+    _left += borderWidth
   }
 
-  const _matches = +(fontSize.match(/(\d+)/)?.[0] ?? '12')
-  const width = _maxTextLength * _matches + (_left + _right)
-  const height = _rows * _matches + (_top + _bottom) + (_rows - 1) * rowGap
+  let [width, height] = [0, 0]
+  if (typeof canvasWidth === 'number') {
+    width = canvasWidth
+  }
+  if (typeof canvasHeight === 'number') {
+    height = canvasHeight
+  }
+  if (content && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
+    const _matches = +(fontSize.match(/(\d+)/)?.[0] ?? '12')
 
+    if (canvasWidth === 'auto') {
+      const _maxTextLength = Array.isArray(content)
+        ? get_string_width(content.sort((a, b) => b.length - a.length)[0])
+        : get_string_width(content)
+      width = _maxTextLength * _matches + (_left + _right)
+    }
+    if (canvasHeight === 'auto') {
+      let _rows = 1
+      if (Array.isArray(content)) {
+        content.filter(Boolean)
+        _rows = content.length
+      }
+      height = _rows * _matches + (_top + _bottom) + (_rows - 1) * rowGap
+    }
+  }
+
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
   canvas.width = width
   canvas.height = height
 
-  drawCtx({ ctx, radius: borderRadius, width, height, backgroundColor })
+  if (width && height) {
+    drawCtx({ ctx, radius: borderRadius, width, height, backgroundColor })
 
-  drawBorder({ ctx, width, height, borderStyle })
+    drawBorder({ ctx, width, height, borderStyle })
 
-  drawText({ ctx, text, width, height, fontStyle, top: _top })
+    if (content) {
+      drawText({ ctx, text: content, fontStyle, top: _top, left: _left, rowGap })
+    }
+  }
 
   return canvas
 }
