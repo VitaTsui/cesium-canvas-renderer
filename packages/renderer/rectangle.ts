@@ -158,7 +158,7 @@ export interface RectangleOptions {
   width?: number | 'auto'
   height?: number | 'auto'
 }
-export default async function rectangle(options: RectangleOptions): Promise<HTMLCanvasElement | undefined> {
+export default function rectangle(options: RectangleOptions): HTMLCanvasElement {
   const {
     content,
     borderStyle = {},
