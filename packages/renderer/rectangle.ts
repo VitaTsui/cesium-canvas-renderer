@@ -1,7 +1,11 @@
 import { deepCopy } from 'hsu-utils'
 
 interface FontStyle {
+  style?: string
+  variant?: string
+  weight?: string
   size?: number
+  lineHeight?: number
   family?: string
   color?: string
   padding?: Padding
@@ -143,10 +147,19 @@ interface DrawTextOptions {
   rowGap?: number
 }
 function drawText(options: DrawTextOptions) {
-  const { ctx, text, fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
-  const { size: fontSize = 12, family: fontFamily = '微软雅黑', color = '#000', textAlign = 'left' } = fontStyle
+  const { ctx, text, fontStyle: _fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
+  const {
+    color = '#000',
+    textAlign = 'left',
+    style: fontStyle = 'normal',
+    variant: fontVariant = 'normal',
+    weight: fontWeight = 'normal',
+    size: fontSize = 12,
+    lineHeight = 1,
+    family: fontFamily = '微软雅黑'
+  } = _fontStyle
 
-  ctx.font = `${fontSize}px ${fontFamily}`
+  ctx.font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize}px/${lineHeight} ${fontFamily}`
   ctx.fillStyle = color
   ctx.textAlign = textAlign
   ctx.textBaseline = 'middle'
