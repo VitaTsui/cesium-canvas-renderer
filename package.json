@@ -1,6 +1,6 @@
 {
   "name": "@hsu-cesium/uilts",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "some cesium utils",
   "repository": "git@github.com:VitaTsui/hsu-cesium-uilts.git",
   "author": "VitaHsu <vitahsu7@gmail.com>",
@@ -35,7 +35,8 @@
     "test": "jest",
     "publish:patch": "yarn build && yarn publish --new-version patch",
     "publish:minor": "yarn build && yarn publish --new-version minor",
-    "publish:major": "yarn build && yarn publish --new-version major"
+    "publish:major": "yarn build && yarn publish --new-version major",
+    "publish:alpha": "yarn build && yarn publish --tag alpha"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
@@ -54,5 +55,7 @@
     "webpack": "^5.65.0",
     "webpack-cli": "^4.9.1"
   },
-  "dependencies": {}
+  "dependencies": {
+    "hsu-utils": "^0.0.5"
+  }
 }

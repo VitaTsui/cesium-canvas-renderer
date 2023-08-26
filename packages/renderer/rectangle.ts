@@ -1,11 +1,12 @@
+import { deepCopy } from 'hsu-utils'
+
 interface FontStyle {
-  size?: string
+  size?: number
   family?: string
   color?: string
-  textAlign?: CanvasTextAlign
-  textBaseline?: CanvasTextBaseline
   padding?: Padding
   rowGap?: number
+  textAlign?: 'left' | 'center' | 'right'
 }
 
 interface BorderStyle {
@@ -24,7 +25,7 @@ type Radius = number | [number, number, number, number]
 function get_string_width(str: string): number {
   let width = 0
   for (const char of str) {
-    width += char.charCodeAt(0) < 128 && char.charCodeAt(0) >= 0 ? 1 : 1
+    width += char.charCodeAt(0) < 128 && char.charCodeAt(0) >= 0 ? 0.5 : 1
   }
 
   return width
@@ -55,18 +56,33 @@ function drawCtx(options: DrawCtxOptions) {
   }
 
   // 左上圆角
-  ctx.beginPath()
-  ctx.arc(x + lt, y + lt, lt, PI, PI * 1.5)
+  if (lt) {
+    ctx.arc(x + lt, y + lt, lt, PI, PI * 1.5)
+  } else {
+    ctx.moveTo(x, y)
+  }
   // 右上圆角
-  ctx.lineTo(x + width - rt, y)
-  ctx.arc(x + width - rt, y + rt, rt, PI * 1.5, 0)
+  if (rt) {
+    ctx.lineTo(x + width - rt, y)
+    ctx.arc(x + width - rt, y + rt, rt, PI * 1.5, 0)
+  } else {
+    ctx.lineTo(x + width, y)
+  }
   // 右下圆角
-  ctx.lineTo(x + width, y + height - rb)
-  ctx.arc(x + width - rb, y + height - rb, rb, 0, PI * 0.5)
+  if (rb) {
+    ctx.lineTo(x + width, y + height - rb)
+    ctx.arc(x + width - rb, y + height - rb, rb, 0, PI * 0.5)
+  } else {
+    ctx.lineTo(x + width, y + height)
+  }
   // 左下圆角
-  ctx.lineTo(x + lb, y + height)
-  ctx.arc(x + lb, y + height - lb, lb, PI * 0.5, PI)
-  ctx.closePath()
+  if (lb) {
+    ctx.lineTo(x + lb, y + height)
+    ctx.arc(x + lb, y + height - lb, lb, PI * 0.5, PI)
+  } else {
+    ctx.lineTo(x, y + height)
+  }
+  ctx.clip()
 
   ctx.fillStyle = backgroundColor
   ctx.fillRect(0, 0, width, height)
@@ -83,8 +99,11 @@ interface DrawBorderOptions {
 }
 function drawBorder(options: DrawBorderOptions) {
   const { ctx, width, height, borderStyle = {} } = options
-  const { color: borderColor = '#fff', width: borderWidth = 0, radius: borderRadius = 0 } = borderStyle
-  const PI = Math.PI
+  const { color: borderColor = '#fff', width: borderWidth = 1, radius: borderRadius = 0 } = borderStyle
+
+  if (!borderWidth) {
+    return
+  }
 
   const [x, y] = [0, 0]
 
@@ -96,6 +115,7 @@ function drawBorder(options: DrawBorderOptions) {
   }
 
   const path = new Path2D()
+  const PI = Math.PI
   path.moveTo(x + lt, y)
   path.lineTo(x + width - lt, y)
   path.arc(x + width - lt, y + lt, lt, PI * 1.5, 0, false)
@@ -124,26 +144,34 @@ interface DrawTextOptions {
 }
 function drawText(options: DrawTextOptions) {
   const { ctx, text, fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
-  const {
-    size: fontSize = '12px',
-    family: fontFamily = '微软雅黑',
-    color = '#000',
-    textAlign = 'left',
-    textBaseline = 'middle'
-  } = fontStyle
+  const { size: fontSize = 12, family: fontFamily = '微软雅黑', color = '#000', textAlign = 'left' } = fontStyle
 
-  ctx.font = `${fontSize} ${fontFamily} `
+  ctx.font = `${fontSize}px ${fontFamily}`
   ctx.fillStyle = color
   ctx.textAlign = textAlign
-  ctx.textBaseline = textBaseline
+  ctx.textBaseline = 'middle'
+
+  const _maxTextLength = Array.isArray(text)
+    ? get_string_width(deepCopy(text).sort((a, b) => b.length - a.length)[0])
+    : get_string_width(text)
+  const textLenth = _maxTextLength * fontSize
+
+  let [_left, _top] = [left, top]
+  if (textAlign === 'center') {
+    _left += textLenth / 2
+  }
+  if (textAlign === 'right') {
+    _left += textLenth
+  }
+  _top += fontSize / 2
+
   if (Array.isArray(text)) {
     text.forEach((item, idx) => {
-      const _matches = +(fontSize.match(/(\d+)/)?.[0] ?? '12')
-      const _height = _matches * (idx + 1) + top + (idx !== 0 ? rowGap : 0)
-      ctx.fillText(item, left, _height)
+      const _height = fontSize * idx + _top + rowGap * idx
+      ctx.fillText(item, _left, _height)
     })
   } else {
-    ctx.fillText(text, left, top)
+    ctx.fillText(text, _left, _top)
   }
 }
 
@@ -158,7 +186,7 @@ export interface RectangleOptions {
   width?: number | 'auto'
   height?: number | 'auto'
 }
-export default async function rectangle(options: RectangleOptions): Promise<HTMLCanvasElement | undefined> {
+export default function rectangle(options: RectangleOptions): HTMLCanvasElement {
   const {
     content,
     borderStyle = {},
@@ -167,8 +195,8 @@ export default async function rectangle(options: RectangleOptions): Promise<HTML
     width: canvasWidth = 'auto',
     height: canvasHeight = 'auto'
   } = options
-  const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
-  const { size: fontSize = '12px', padding = 0, rowGap = 0 } = fontStyle
+  const { radius: borderRadius = 0, width: borderWidth = 1 } = borderStyle
+  const { size: fontSize = 12, padding = 0, rowGap = 0 } = fontStyle
 
   let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
   if (Array.isArray(padding)) {
@@ -195,22 +223,25 @@ export default async function rectangle(options: RectangleOptions): Promise<HTML
   if (typeof canvasHeight === 'number') {
     height = canvasHeight
   }
-  if (content && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
-    const _matches = +(fontSize.match(/(\d+)/)?.[0] ?? '12')
+  let _text = content
+  if (_text && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
+    if (Array.isArray(_text)) {
+      _text = _text.filter(Boolean)
+    }
 
     if (canvasWidth === 'auto') {
-      const _maxTextLength = Array.isArray(content)
-        ? get_string_width(content.sort((a, b) => b.length - a.length)[0])
-        : get_string_width(content)
-      width = _maxTextLength * _matches + (_left + _right)
+      const _maxTextLength = Array.isArray(_text)
+        ? get_string_width(deepCopy(_text).sort((a, b) => b.length - a.length)[0])
+        : get_string_width(_text)
+      width = _maxTextLength * fontSize + (_left + _right)
     }
+
     if (canvasHeight === 'auto') {
       let _rows = 1
-      if (Array.isArray(content)) {
-        content.filter(Boolean)
-        _rows = content.length
+      if (Array.isArray(_text)) {
+        _rows = _text.length
       }
-      height = _rows * _matches + (_top + _bottom) + (_rows - 1) * rowGap
+      height = _rows * fontSize + (_top + _bottom) + (_rows - 1) * rowGap
     }
   }
 
@@ -224,8 +255,8 @@ export default async function rectangle(options: RectangleOptions): Promise<HTML
 
     drawBorder({ ctx, width, height, borderStyle })
 
-    if (content) {
-      drawText({ ctx, text: content, fontStyle, top: _top, left: _left, rowGap })
+    if (_text) {
+      drawText({ ctx, text: _text, fontStyle, top: _top, left: _left, rowGap })
     }
   }
 
