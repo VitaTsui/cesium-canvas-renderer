@@ -18,6 +18,9 @@ interface ImageElement {
   height: number
 }
 
+/**
+ * 获取最大图片宽度
+ */
 function get_img_maxWidth(images: ImageElement[], direction: Direction) {
   let width = 0
 
@@ -27,12 +30,16 @@ function get_img_maxWidth(images: ImageElement[], direction: Direction) {
     }, 0)
   } else if (direction === 'horizontal') {
     width = images.reduce((prev, curr) => {
-      return prev.height > curr.height ? prev : curr
+      return prev.width > curr.width ? prev : curr
     }).width
   }
 
   return width
 }
+
+/**
+ * 获取最大图片高度
+ */
 function get_img_maxHeight(images: ImageElement[], direction: Direction) {
   let height = 0
 
@@ -50,7 +57,7 @@ function get_img_maxHeight(images: ImageElement[], direction: Direction) {
 }
 
 /**
- *
+ * 绘制图片
  */
 interface DrawImgOptions {
   ctx: CanvasRenderingContext2D
@@ -70,7 +77,7 @@ function drawImg(options: DrawImgOptions) {
   if (direction === 'vertical') {
     let _left = left
 
-    for (const image of images) {
+    images.forEach((image) => {
       let _top = top
       if (imgAlign === 'center') {
         _top += (maxHeight - image.height) / 2
@@ -80,11 +87,11 @@ function drawImg(options: DrawImgOptions) {
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
       _left += image.width + gap
-    }
+    })
   } else if (direction === 'horizontal') {
     let _top = top
 
-    for (const image of images) {
+    images.forEach((image) => {
       let _left = left
       if (imgAlign === 'center') {
         _left += (maxWidth - image.width) / 2
@@ -94,7 +101,7 @@ function drawImg(options: DrawImgOptions) {
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
       _top += image.height + gap
-    }
+    })
   }
 }
 
@@ -130,21 +137,26 @@ export default async function ImageGraphics(options: ImageGraphicsOptions) {
   if (!!_imgs.length) {
     const _images: ImageElement[] = []
     for (const img of _imgs) {
-      let imgUrl = ''
-      let [imgWidth, imgHeight] = [0, 0]
       if (typeof img === 'string') {
-        imgUrl = img
+        const image = await loadImage(img)
+        _images.push({
+          image,
+          width: image.width,
+          height: image.height
+        })
       } else {
-        imgUrl = img.url
-        imgWidth = img.width || 0
-        imgHeight = img.height || 0
+        let [imgWidth, imgHeight] = [0, 0]
+
+        const image = await loadImage(img.url)
+        imgWidth = img.width || image.width
+        imgHeight = img.height || image.height
+
+        _images.push({
+          image,
+          width: imgWidth,
+          height: imgHeight
+        })
       }
-      const image = await loadImage(imgUrl)
-      _images.push({
-        image,
-        width: imgWidth ?? image.width,
-        height: imgHeight ?? image.height
-      })
     }
 
     let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
