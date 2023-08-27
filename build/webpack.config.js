@@ -9,12 +9,12 @@ const pkg = require('../package.json')
 
 const config = {
   mode: devMode ? 'development' : 'production',
-  entry: ['./packages/index.ts'],
+  entry: ['./src/index.ts'],
   output: {
     path: path.resolve(__dirname, '../dist'),
-    filename: devMode ? 'hsu-cesium-uilts.js' : 'hsu-cesium-uilts.min.js',
+    filename: devMode ? 'cesium-canvas-renderer.js' : 'cesium-canvas-renderer.min.js',
     globalObject: 'this',
-    library: 'hsu-cesium-uilts',
+    library: 'cesium-canvas-renderer',
     libraryTarget: 'umd'
   },
   module: {
@@ -35,7 +35,7 @@ const config = {
   },
   plugins: [
     new webpack.BannerPlugin(
-      `\nhsu-cesium-uilts v${pkg.version} \n\n${pkg.description} \n\n${fs.readFileSync(path.join(process.cwd(), 'LICENSE'))}`
+      `\ncesium-canvas-renderer v${pkg.version} \n\n${pkg.description} \n\n${fs.readFileSync(path.join(process.cwd(), 'LICENSE'))}`
     ),
   ],
   optimization: {

@@ -1,13 +1,13 @@
 {
-  "name": "@hsu-cesium/uilts",
-  "version": "0.0.8",
+  "name": "@hsu-cesium/canvas-renderer",
+  "version": "0.0.0",
   "description": "some cesium utils",
-  "repository": "git@github.com:VitaTsui/hsu-cesium-uilts.git",
+  "repository": "git@github.com:VitaTsui/cesium-canvas-renderer.git",
   "author": "VitaHsu <vitahsu7@gmail.com>",
   "license": "MIT",
   "main": "lib/index.js",
   "module": "es/index.js",
-  "unpkg": "dist/hsu-cesium-uilts.min.js",
+  "unpkg": "dist/cesium-canvas-renderer.min.js",
   "publishConfig": {
     "access": "public"
   },
