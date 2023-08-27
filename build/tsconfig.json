@@ -16,6 +16,6 @@
     "newLine": "lf",
     "removeComments": true,
   },
-  "include": ["../packages/**/*.ts", "../packages/**/*.tsx"],
-  "exclude": ["node_modules", "../packages/**/__tests__"]
+  "include": ["../src/**/*.ts", "../src/**/*.tsx"],
+  "exclude": ["node_modules", "../src/**/__tests__"]
 }

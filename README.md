@@ -1,13 +1,13 @@
-# [Hsu Cesium Utils](https://github.com/VitaTsui/hsu-cesium-uilts#hsu-cesium-uilts)
+# [Hsu Cesium Utils](https://github.com/VitaTsui/cesium-canvas-renderer#cesium-canvas-renderer)
 
 ## 前言
 
-`hsu-cesium-uilts` 一些 Cesium 的工具集
+`cesium-canvas-renderer` 一些生成 canvas 的渲染器
 
 ## 安装
 
 ```sh
-npm install --save @hsu-cesium/uilts
+npm install --save @hsu-cesium/canvas-renderer
 # 或
-yarn add @hsu-cesium/uilts
+yarn add @hsu-cesium/canvas-renderer
 ```

@@ -1,4 +1,4 @@
-import loadImage from '../../_utils/loadImage'
+import loadImage from '../_utils/loadImage'
 
 type Padding = number | [number, number] | [number, number, number, number]
 
