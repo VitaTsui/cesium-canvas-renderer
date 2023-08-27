@@ -2,6 +2,10 @@ import { deepCopy } from 'hsu-utils'
 
 type TextAlign = 'left' | 'center' | 'right'
 
+type Padding = number | [number, number] | [number, number, number, number]
+
+type Radius = number | [number, number, number, number]
+
 interface FontStyle {
   style?: string
   variant?: string
@@ -23,10 +27,6 @@ interface BorderStyle {
   width?: number
   radius?: Radius
 }
-
-type Padding = number | [number, number] | [number, number, number, number]
-
-type Radius = number | [number, number, number, number]
 
 /**
  * 计算字符串长度
@@ -238,9 +238,9 @@ function drawText(options: DrawTextOptions) {
 }
 
 /**
- * 绘制矩形 canvas
+ * 绘制 TextGraphics
  */
-export interface RectangleOptions {
+export interface TextGraphicsOptions {
   content?: string | string[]
   borderStyle?: BorderStyle
   backgroundColor?: string
@@ -248,7 +248,7 @@ export interface RectangleOptions {
   width?: number | 'auto'
   height?: number | 'auto'
 }
-export default function rectangle(options: RectangleOptions): HTMLCanvasElement {
+export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasElement {
   const {
     content,
     borderStyle = {},
