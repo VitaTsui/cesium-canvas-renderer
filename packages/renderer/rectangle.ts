@@ -1,5 +1,7 @@
 import { deepCopy } from 'hsu-utils'
 
+type TextAlign = 'left' | 'center' | 'right'
+
 interface FontStyle {
   style?: string
   variant?: string
@@ -10,7 +12,10 @@ interface FontStyle {
   color?: string
   padding?: Padding
   rowGap?: number
-  textAlign?: 'left' | 'center' | 'right'
+  textAlign?: TextAlign
+  letterSpacing?: number
+  borderColor?: string
+  borderWidth?: number
 }
 
 interface BorderStyle {
@@ -31,6 +36,14 @@ function get_string_width(str: string): number {
   for (const char of str) {
     width += char.charCodeAt(0) < 128 && char.charCodeAt(0) >= 0 ? 0.5 : 1
   }
+
+  return width
+}
+/**
+ * 计算字符长度
+ */
+function get_char_width(char: string): number {
+  const width = char.charCodeAt(0) < 128 && char.charCodeAt(0) >= 0 ? 0.5 : 1
 
   return width
 }
@@ -103,7 +116,7 @@ interface DrawBorderOptions {
 }
 function drawBorder(options: DrawBorderOptions) {
   const { ctx, width, height, borderStyle = {} } = options
-  const { color: borderColor = '#fff', width: borderWidth = 1, radius: borderRadius = 0 } = borderStyle
+  const { color: borderColor = '#fff', width: borderWidth = 0, radius: borderRadius = 0 } = borderStyle
 
   if (!borderWidth) {
     return
@@ -135,12 +148,45 @@ function drawBorder(options: DrawBorderOptions) {
   ctx.stroke(path)
 }
 
+// 计算左侧边距
+function _calculateLeft(maxTextLength: number, textLenth: number, textAlign: TextAlign) {
+  let _left = 0
+
+  if (textAlign === 'center') {
+    _left += (maxTextLength - textLenth) / 2
+  }
+  if (textAlign === 'right') {
+    _left += maxTextLength - textLenth
+  }
+
+  return _left
+}
+// 绘制行文本
+function drawRowText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  left: number,
+  top: number,
+  fontSize: number,
+  borderWidth: number,
+  letterSpacing: number
+) {
+  let [_left, _top] = [left, top]
+
+  for (const char of text) {
+    ctx.fillText(char, _left, _top)
+    if (borderWidth) {
+      ctx.strokeText(char, _left, _top)
+    }
+    _left += fontSize * get_char_width(char) + letterSpacing
+  }
+}
 /**
  * 绘制文字
  */
 interface DrawTextOptions {
   ctx: CanvasRenderingContext2D
-  text: string | string[]
+  text: string[]
   fontStyle?: FontStyle
   top?: number
   left?: number
@@ -156,36 +202,39 @@ function drawText(options: DrawTextOptions) {
     weight: fontWeight = 'normal',
     size: fontSize = 12,
     lineHeight = 1,
-    family: fontFamily = '微软雅黑'
+    family: fontFamily = '微软雅黑',
+    borderColor = '#000',
+    borderWidth = 0,
+    letterSpacing = 0
   } = _fontStyle
 
   ctx.font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize}px/${lineHeight} ${fontFamily}`
   ctx.fillStyle = color
-  ctx.textAlign = textAlign
+  ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
+  ctx.strokeStyle = borderColor
+  ctx.lineWidth = borderWidth
 
-  const _maxTextLength = Array.isArray(text)
-    ? get_string_width(deepCopy(text).sort((a, b) => b.length - a.length)[0])
-    : get_string_width(text)
-  const textLenth = _maxTextLength * fontSize
+  const _maxText = deepCopy(text).reduce((prev, curr) => {
+    const prevLength = get_string_width(prev)
+    const currLength = get_string_width(curr)
+    return prevLength > currLength ? prev : curr
+  })
+  const _maxTextWidth = get_string_width(_maxText)
+  const _maxTextLength = _maxTextWidth * fontSize + (_maxText.length - 1) * letterSpacing
 
   let [_left, _top] = [left, top]
-  if (textAlign === 'center') {
-    _left += textLenth / 2
-  }
-  if (textAlign === 'right') {
-    _left += textLenth
-  }
   _top += fontSize / 2
 
-  if (Array.isArray(text)) {
-    text.forEach((item, idx) => {
-      const _height = fontSize * idx + _top + rowGap * idx
-      ctx.fillText(item, _left, _height)
-    })
-  } else {
-    ctx.fillText(text, _left, _top)
-  }
+  text.forEach((_text, idx) => {
+    let _textLeft = _left
+    const _textLenth = get_string_width(_text) * fontSize + (_text.length - 1) * letterSpacing
+    _textLeft += _calculateLeft(_maxTextLength, _textLenth, textAlign)
+
+    const _textTop = _top + fontSize * idx + rowGap * idx
+
+    drawRowText(ctx, _text, _textLeft, _textTop, fontSize, borderWidth, letterSpacing)
+  })
 }
 
 /**
@@ -208,8 +257,8 @@ export default function rectangle(options: RectangleOptions): HTMLCanvasElement 
     width: canvasWidth = 'auto',
     height: canvasHeight = 'auto'
   } = options
-  const { radius: borderRadius = 0, width: borderWidth = 1 } = borderStyle
-  const { size: fontSize = 12, padding = 0, rowGap = 0 } = fontStyle
+  const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
+  const { size: fontSize = 12, padding = 0, rowGap = 0, letterSpacing = 0 } = fontStyle
 
   let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
   if (Array.isArray(padding)) {
@@ -236,25 +285,22 @@ export default function rectangle(options: RectangleOptions): HTMLCanvasElement 
   if (typeof canvasHeight === 'number') {
     height = canvasHeight
   }
-  let _text = content
-  if (_text && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
-    if (Array.isArray(_text)) {
-      _text = _text.filter(Boolean)
-    }
-
+  let _text = content ? (Array.isArray(content) ? deepCopy(content) : [content]) : []
+  _text = _text.filter(Boolean)
+  if (!!_text.length && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
     if (canvasWidth === 'auto') {
-      const _maxTextLength = Array.isArray(_text)
-        ? get_string_width(deepCopy(_text).sort((a, b) => b.length - a.length)[0])
-        : get_string_width(_text)
-      width = _maxTextLength * fontSize + (_left + _right)
+      const _maxText = deepCopy(_text).reduce((prev, curr) => {
+        const prevLength = get_string_width(prev)
+        const currLength = get_string_width(curr)
+        return prevLength > currLength ? prev : curr
+      })
+      const _maxTextWidth = get_string_width(_maxText)
+      width = _maxTextWidth * fontSize + (_left + _right) + (_maxText.length - 1) * letterSpacing
     }
 
     if (canvasHeight === 'auto') {
-      let _rows = 1
-      if (Array.isArray(_text)) {
-        _rows = _text.length
-      }
-      height = _rows * fontSize + (_top + _bottom) + (_rows - 1) * rowGap
+      const _rows = _text.length
+      height = _rows * fontSize + (_top + _bottom) + (_rows - 1) * rowGap - (_rows % 2 === 0 ? 2 : 4)
     }
   }
 
@@ -269,7 +315,14 @@ export default function rectangle(options: RectangleOptions): HTMLCanvasElement 
     drawBorder({ ctx, width, height, borderStyle })
 
     if (_text) {
-      drawText({ ctx, text: _text, fontStyle, top: _top, left: _left, rowGap })
+      drawText({
+        ctx,
+        text: _text,
+        fontStyle,
+        top: _top,
+        left: _left,
+        rowGap
+      })
     }
   }
 
