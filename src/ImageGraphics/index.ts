@@ -91,7 +91,7 @@ function drawImg(options: DrawImgOptions) {
 
     images.forEach((image) => {
       let _top = top
-      if (maxHeight && _maxHeight > maxHeight) _maxHeight = maxHeight
+      if (maxHeight) _maxHeight = maxHeight
       if (imgAlign === 'center') {
         _top += (_maxHeight - image.height) / 2
       } else if (imgAlign === 'end') {
@@ -106,7 +106,7 @@ function drawImg(options: DrawImgOptions) {
 
     images.forEach((image) => {
       let _left = left
-      if (maxWidth && _maxWidth > maxWidth) _maxWidth = maxWidth
+      if (maxWidth) _maxWidth = maxWidth
       if (imgAlign === 'center') {
         _left += (_maxWidth - image.width) / 2
       } else if (imgAlign === 'end') {
