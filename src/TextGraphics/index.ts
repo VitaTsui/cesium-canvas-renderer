@@ -1,4 +1,5 @@
 import { deepCopy } from 'hsu-utils'
+import loadImage from '../_utils/loadImage'
 
 type TextAlign = 'left' | 'center' | 'right'
 
@@ -28,6 +29,13 @@ interface BorderStyle {
   radius?: Radius
 }
 
+interface BackgroundStyle {
+  color?: string
+  image?: string
+  size?: [string, string] | string
+  position?: [number, number] | number
+}
+
 /**
  * 计算字符串长度
  */
@@ -53,13 +61,19 @@ function get_char_width(char: string): number {
  */
 interface DrawCtxOptions {
   ctx: CanvasRenderingContext2D
-  backgroundColor?: string
+  backgroundStyle?: BackgroundStyle
   radius?: Radius
   width: number
   height: number
 }
-function drawCtx(options: DrawCtxOptions) {
-  const { ctx, width, height, radius = 0, backgroundColor = '#ffffff00' } = options
+async function drawCtx(options: DrawCtxOptions) {
+  const { ctx, width, height, radius = 0, backgroundStyle = {} } = options
+  const {
+    color: backgroundColor = '#ffffff00',
+    image: backgroundImage,
+    size: backgroundSize,
+    position: backgroundPosition
+  } = backgroundStyle
 
   const PI = Math.PI
 
@@ -103,6 +117,45 @@ function drawCtx(options: DrawCtxOptions) {
 
   ctx.fillStyle = backgroundColor
   ctx.fillRect(0, 0, width, height)
+
+  if (backgroundImage) {
+    const image = await loadImage(backgroundImage)
+
+    let [_x, _y] = [0, 0]
+    if (backgroundPosition) {
+      if (Array.isArray(backgroundPosition)) {
+        ;[_x, _y] = backgroundPosition
+      } else {
+        ;[_x, _y] = [backgroundPosition, backgroundPosition]
+      }
+    }
+
+    let [_width, _height] = [image.width, image.height]
+    if (backgroundSize) {
+      let [_w_size, _h_size] = ['', '']
+      if (Array.isArray(backgroundSize)) {
+        ;[_w_size, _h_size] = backgroundSize
+      } else {
+        ;[_w_size, _h_size] = [backgroundSize, backgroundSize]
+      }
+
+      if (!isNaN(+_w_size)) {
+        _width = +_w_size
+      } else {
+        const w_percent = +_w_size.replace('%', '')
+        _width = (w_percent * width) / 100
+      }
+
+      if (!isNaN(+_h_size)) {
+        _height = +_h_size
+      } else {
+        const h_percent = +_h_size.replace('%', '')
+        _height = (h_percent * height) / 100
+      }
+    }
+
+    ctx.drawImage(image, _x, _y, _width, _height)
+  }
 }
 
 /**
@@ -243,7 +296,7 @@ function drawText(options: DrawTextOptions) {
 export interface TextGraphicsOptions {
   content?: string | string[]
   borderStyle?: BorderStyle
-  backgroundColor?: string
+  backgroundStyle?: BackgroundStyle
   fontStyle?: FontStyle
   width?: number | 'auto'
   height?: number | 'auto'
@@ -252,7 +305,7 @@ export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasEl
   const {
     content,
     borderStyle = {},
-    backgroundColor = '#ffffff00',
+    backgroundStyle = {},
     fontStyle = {},
     width: canvasWidth = 'auto',
     height: canvasHeight = 'auto'
@@ -310,7 +363,7 @@ export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasEl
   canvas.height = height
 
   if (width && height) {
-    drawCtx({ ctx, radius: borderRadius, width, height, backgroundColor })
+    drawCtx({ ctx, radius: borderRadius, width, height, backgroundStyle })
 
     drawBorder({ ctx, width, height, borderStyle })
 
