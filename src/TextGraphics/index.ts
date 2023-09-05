@@ -115,9 +115,6 @@ async function drawCtx(options: DrawCtxOptions) {
   }
   ctx.clip()
 
-  ctx.fillStyle = backgroundColor
-  ctx.fillRect(0, 0, width, height)
-
   if (backgroundImage) {
     const image = await loadImage(backgroundImage)
 
@@ -155,6 +152,9 @@ async function drawCtx(options: DrawCtxOptions) {
     }
 
     ctx.drawImage(image, _x, _y, _width, _height)
+  } else {
+    ctx.fillStyle = backgroundColor
+    ctx.fillRect(0, 0, width, height)
   }
 }
 
