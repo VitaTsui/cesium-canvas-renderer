@@ -69,11 +69,15 @@ interface DrawCtxOptions {
 async function drawCtx(options: DrawCtxOptions) {
   const { ctx, width, height, radius = 0, backgroundStyle = {} } = options
   const {
-    color: backgroundColor = '#ffffff00',
+    color: backgroundColor,
     image: backgroundImage,
     size: backgroundSize,
     position: backgroundPosition
   } = backgroundStyle
+
+  if (!backgroundColor && !backgroundImage) {
+    return
+  }
 
   const PI = Math.PI
 
@@ -115,6 +119,11 @@ async function drawCtx(options: DrawCtxOptions) {
   }
   ctx.clip()
 
+  if (backgroundColor) {
+    ctx.fillStyle = backgroundColor
+    ctx.fillRect(0, 0, width, height)
+  }
+
   if (backgroundImage) {
     const image = await loadImage(backgroundImage)
 
@@ -140,21 +149,18 @@ async function drawCtx(options: DrawCtxOptions) {
         _width = +_w_size
       } else {
         const w_percent = +_w_size.replace('%', '')
-        _width = (w_percent * width) / 100
+        _width = (w_percent * _width) / 100
       }
 
       if (!isNaN(+_h_size)) {
         _height = +_h_size
       } else {
         const h_percent = +_h_size.replace('%', '')
-        _height = (h_percent * height) / 100
+        _height = (h_percent * _height) / 100
       }
     }
 
     ctx.drawImage(image, _x, _y, _width, _height)
-  } else {
-    ctx.fillStyle = backgroundColor
-    ctx.fillRect(0, 0, width, height)
   }
 }
 
@@ -169,9 +175,9 @@ interface DrawBorderOptions {
 }
 function drawBorder(options: DrawBorderOptions) {
   const { ctx, width, height, borderStyle = {} } = options
-  const { color: borderColor = '#fff', width: borderWidth = 0, radius: borderRadius = 0 } = borderStyle
+  const { color: borderColor, width: borderWidth = 0, radius: borderRadius = 0 } = borderStyle
 
-  if (!borderWidth) {
+  if (!borderWidth || !borderColor) {
     return
   }
 
@@ -197,6 +203,7 @@ function drawBorder(options: DrawBorderOptions) {
   path.arc(x + rb, y + rb, rb, PI, PI * 1.5, false)
 
   ctx.lineWidth = borderWidth
+
   ctx.strokeStyle = borderColor
   ctx.stroke(path)
 }
@@ -269,14 +276,17 @@ function drawText(options: DrawTextOptions) {
   ctx.strokeStyle = borderColor
   ctx.lineWidth = borderWidth
 
-  const _maxText = deepCopy(text).reduce((prev, curr) => {
-    const prevLength = get_string_width(prev)
-    const currLength = get_string_width(curr)
-    return prevLength > currLength ? prev : curr
-  })
-  const _maxTextWidth = get_string_width(_maxText)
-  let _maxTextLength = _maxTextWidth * fontSize + (_maxText.length - 1) * letterSpacing
-  if (maxTextLength && _maxTextLength > maxTextLength) {
+  let _maxTextLength = 0
+  if (!!text.length) {
+    const _maxText = deepCopy(text).reduce((prev, curr) => {
+      const prevLength = get_string_width(prev)
+      const currLength = get_string_width(curr)
+      return prevLength > currLength ? prev : curr
+    })
+    const _maxTextWidth = get_string_width(_maxText)
+    _maxTextLength = _maxTextWidth * fontSize + (_maxText.length - 1) * letterSpacing
+  }
+  if (maxTextLength) {
     _maxTextLength = maxTextLength
   }
 
@@ -305,7 +315,7 @@ export interface TextGraphicsOptions {
   width?: number | 'auto'
   height?: number | 'auto'
 }
-export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasElement {
+export default async function TextGraphics(options: TextGraphicsOptions): Promise<HTMLCanvasElement> {
   const {
     content,
     borderStyle = {},
@@ -367,7 +377,7 @@ export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasEl
   canvas.height = height
 
   if (width && height) {
-    drawCtx({ ctx, radius: borderRadius, width, height, backgroundStyle })
+    await drawCtx({ ctx, radius: borderRadius, width, height, backgroundStyle })
 
     drawBorder({ ctx, width, height, borderStyle })
 
