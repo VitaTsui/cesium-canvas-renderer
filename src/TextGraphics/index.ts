@@ -212,7 +212,7 @@ function _calculateLeft(maxTextLength: number, textLenth: number, textAlign: Tex
     _left += maxTextLength - textLenth
   }
 
-  return _left
+  return _left < 0 ? 0 : _left
 }
 // 绘制行文本
 function drawRowText(
@@ -240,13 +240,14 @@ function drawRowText(
 interface DrawTextOptions {
   ctx: CanvasRenderingContext2D
   text: string[]
+  maxTextLength?: number
   fontStyle?: FontStyle
   top?: number
   left?: number
   rowGap?: number
 }
 function drawText(options: DrawTextOptions) {
-  const { ctx, text, fontStyle: _fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
+  const { ctx, text, maxTextLength, fontStyle: _fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
   const {
     color = '#000',
     textAlign = 'left',
@@ -274,7 +275,10 @@ function drawText(options: DrawTextOptions) {
     return prevLength > currLength ? prev : curr
   })
   const _maxTextWidth = get_string_width(_maxText)
-  const _maxTextLength = _maxTextWidth * fontSize + (_maxText.length - 1) * letterSpacing
+  let _maxTextLength = _maxTextWidth * fontSize + (_maxText.length - 1) * letterSpacing
+  if (maxTextLength && _maxTextLength > maxTextLength) {
+    _maxTextLength = maxTextLength
+  }
 
   let [_left, _top] = [left, top]
   _top += fontSize / 2
@@ -370,6 +374,7 @@ export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasEl
     if (_text) {
       drawText({
         ctx,
+        maxTextLength: width - (_left + _right),
         text: _text,
         fontStyle,
         top: _top,
