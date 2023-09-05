@@ -97,7 +97,6 @@ function drawImg(options: DrawImgOptions) {
       } else if (imgAlign === 'end') {
         _top += _maxHeight - image.height
       }
-      _top = _top < 0 ? top : _top
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
       _left += image.width + gap
@@ -113,7 +112,6 @@ function drawImg(options: DrawImgOptions) {
       } else if (imgAlign === 'end') {
         _left += _maxWidth - image.width
       }
-      _left = _left < 0 ? left : _left
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
       _top += image.height + gap

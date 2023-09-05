@@ -212,7 +212,7 @@ function _calculateLeft(maxTextLength: number, textLenth: number, textAlign: Tex
     _left += maxTextLength - textLenth
   }
 
-  return _left < 0 ? 0 : _left
+  return _left
 }
 // 绘制行文本
 function drawRowText(
