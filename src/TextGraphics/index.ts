@@ -29,8 +29,12 @@ interface BorderStyle {
   radius?: Radius
 }
 
+interface LinearGradient {
+  [key: number]: string
+}
+
 interface BackgroundStyle {
-  color?: string
+  color?: string | LinearGradient
   image?: string
   size?: [string, string] | string
   position?: [number, number] | number
@@ -120,7 +124,17 @@ async function drawCtx(options: DrawCtxOptions) {
   ctx.clip()
 
   if (backgroundColor) {
-    ctx.fillStyle = backgroundColor
+    if (typeof backgroundColor === 'string') {
+      ctx.fillStyle = backgroundColor
+    } else {
+      const gradient = ctx.createLinearGradient(0, 0, width, height)
+      Object.keys(backgroundColor).forEach((key) => {
+        const color = backgroundColor[+key]
+        gradient.addColorStop(+key, color)
+      })
+      ctx.fillStyle = gradient
+    }
+
     ctx.fillRect(0, 0, width, height)
   }
 
