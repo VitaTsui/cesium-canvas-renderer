@@ -1,4 +1,5 @@
 import { deepCopy } from 'hsu-utils'
+import loadImage from '../_utils/loadImage'
 
 type TextAlign = 'left' | 'center' | 'right'
 
@@ -28,6 +29,17 @@ interface BorderStyle {
   radius?: Radius
 }
 
+interface LinearGradient {
+  [key: number]: string
+}
+
+interface BackgroundStyle {
+  color?: string | LinearGradient
+  image?: string
+  size?: [string, string] | string
+  position?: [number, number] | number
+}
+
 /**
  * 计算字符串长度
  */
@@ -53,13 +65,23 @@ function get_char_width(char: string): number {
  */
 interface DrawCtxOptions {
   ctx: CanvasRenderingContext2D
-  backgroundColor?: string
+  backgroundStyle?: BackgroundStyle
   radius?: Radius
   width: number
   height: number
 }
-function drawCtx(options: DrawCtxOptions) {
-  const { ctx, width, height, radius = 0, backgroundColor = '#ffffff00' } = options
+async function drawCtx(options: DrawCtxOptions) {
+  const { ctx, width, height, radius = 0, backgroundStyle = {} } = options
+  const {
+    color: backgroundColor,
+    image: backgroundImage,
+    size: backgroundSize,
+    position: backgroundPosition
+  } = backgroundStyle
+
+  if (!backgroundColor && !backgroundImage) {
+    return
+  }
 
   const PI = Math.PI
 
@@ -101,8 +123,59 @@ function drawCtx(options: DrawCtxOptions) {
   }
   ctx.clip()
 
-  ctx.fillStyle = backgroundColor
-  ctx.fillRect(0, 0, width, height)
+  if (backgroundColor) {
+    if (typeof backgroundColor === 'string') {
+      ctx.fillStyle = backgroundColor
+    } else {
+      const gradient = ctx.createLinearGradient(0, 0, width, height)
+      Object.keys(backgroundColor).forEach((key) => {
+        const color = backgroundColor[+key]
+        gradient.addColorStop(+key, color)
+      })
+      ctx.fillStyle = gradient
+    }
+
+    ctx.fillRect(0, 0, width, height)
+  }
+
+  if (backgroundImage) {
+    const image = await loadImage(backgroundImage)
+
+    let [_x, _y] = [0, 0]
+    if (backgroundPosition) {
+      if (Array.isArray(backgroundPosition)) {
+        ;[_x, _y] = backgroundPosition
+      } else {
+        ;[_x, _y] = [backgroundPosition, backgroundPosition]
+      }
+    }
+
+    let [_width, _height] = [image.width, image.height]
+    if (backgroundSize) {
+      let [_w_size, _h_size] = ['', '']
+      if (Array.isArray(backgroundSize)) {
+        ;[_w_size, _h_size] = backgroundSize
+      } else {
+        ;[_w_size, _h_size] = [backgroundSize, backgroundSize]
+      }
+
+      if (!isNaN(+_w_size)) {
+        _width = +_w_size
+      } else {
+        const w_percent = +_w_size.replace('%', '')
+        _width = (w_percent * _width) / 100
+      }
+
+      if (!isNaN(+_h_size)) {
+        _height = +_h_size
+      } else {
+        const h_percent = +_h_size.replace('%', '')
+        _height = (h_percent * _height) / 100
+      }
+    }
+
+    ctx.drawImage(image, _x, _y, _width, _height)
+  }
 }
 
 /**
@@ -116,9 +189,9 @@ interface DrawBorderOptions {
 }
 function drawBorder(options: DrawBorderOptions) {
   const { ctx, width, height, borderStyle = {} } = options
-  const { color: borderColor = '#fff', width: borderWidth = 0, radius: borderRadius = 0 } = borderStyle
+  const { color: borderColor, width: borderWidth = 0, radius: borderRadius = 0 } = borderStyle
 
-  if (!borderWidth) {
+  if (!borderWidth || !borderColor) {
     return
   }
 
@@ -144,6 +217,7 @@ function drawBorder(options: DrawBorderOptions) {
   path.arc(x + rb, y + rb, rb, PI, PI * 1.5, false)
 
   ctx.lineWidth = borderWidth
+
   ctx.strokeStyle = borderColor
   ctx.stroke(path)
 }
@@ -187,13 +261,14 @@ function drawRowText(
 interface DrawTextOptions {
   ctx: CanvasRenderingContext2D
   text: string[]
+  maxTextLength?: number
   fontStyle?: FontStyle
   top?: number
   left?: number
   rowGap?: number
 }
 function drawText(options: DrawTextOptions) {
-  const { ctx, text, fontStyle: _fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
+  const { ctx, text, maxTextLength, fontStyle: _fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
   const {
     color = '#000',
     textAlign = 'left',
@@ -215,13 +290,19 @@ function drawText(options: DrawTextOptions) {
   ctx.strokeStyle = borderColor
   ctx.lineWidth = borderWidth
 
-  const _maxText = deepCopy(text).reduce((prev, curr) => {
-    const prevLength = get_string_width(prev)
-    const currLength = get_string_width(curr)
-    return prevLength > currLength ? prev : curr
-  })
-  const _maxTextWidth = get_string_width(_maxText)
-  const _maxTextLength = _maxTextWidth * fontSize + (_maxText.length - 1) * letterSpacing
+  let _maxTextLength = 0
+  if (!!text.length) {
+    const _maxText = deepCopy(text).reduce((prev, curr) => {
+      const prevLength = get_string_width(prev)
+      const currLength = get_string_width(curr)
+      return prevLength > currLength ? prev : curr
+    })
+    const _maxTextWidth = get_string_width(_maxText)
+    _maxTextLength = _maxTextWidth * fontSize + (_maxText.length - 1) * letterSpacing
+  }
+  if (maxTextLength) {
+    _maxTextLength = maxTextLength
+  }
 
   let [_left, _top] = [left, top]
   _top += fontSize / 2
@@ -243,16 +324,16 @@ function drawText(options: DrawTextOptions) {
 export interface TextGraphicsOptions {
   content?: string | string[]
   borderStyle?: BorderStyle
-  backgroundColor?: string
+  backgroundStyle?: BackgroundStyle
   fontStyle?: FontStyle
   width?: number | 'auto'
   height?: number | 'auto'
 }
-export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasElement {
+export default async function TextGraphics(options: TextGraphicsOptions): Promise<HTMLCanvasElement> {
   const {
     content,
     borderStyle = {},
-    backgroundColor = '#ffffff00',
+    backgroundStyle = {},
     fontStyle = {},
     width: canvasWidth = 'auto',
     height: canvasHeight = 'auto'
@@ -310,13 +391,14 @@ export default function TextGraphics(options: TextGraphicsOptions): HTMLCanvasEl
   canvas.height = height
 
   if (width && height) {
-    drawCtx({ ctx, radius: borderRadius, width, height, backgroundColor })
+    await drawCtx({ ctx, radius: borderRadius, width, height, backgroundStyle })
 
     drawBorder({ ctx, width, height, borderStyle })
 
     if (_text) {
       drawText({
         ctx,
+        maxTextLength: width - (_left + _right),
         text: _text,
         fontStyle,
         top: _top,

@@ -61,6 +61,8 @@ function get_img_maxHeight(images: ImageElement[], direction: Direction) {
  */
 interface DrawImgOptions {
   ctx: CanvasRenderingContext2D
+  maxWidth?: number
+  maxHeight?: number
   images: ImageElement[]
   top?: number
   left?: number
@@ -69,20 +71,31 @@ interface DrawImgOptions {
   imgAlign?: ImgAlign
 }
 function drawImg(options: DrawImgOptions) {
-  const { ctx, images, top = 0, left = 0, gap = 0, direction = 'vertical', imgAlign = 'start' } = options
+  const {
+    ctx,
+    maxWidth,
+    maxHeight,
+    images,
+    top = 0,
+    left = 0,
+    gap = 0,
+    direction = 'vertical',
+    imgAlign = 'start'
+  } = options
 
-  const maxWidth = get_img_maxWidth(images, direction)
-  const maxHeight = get_img_maxHeight(images, direction)
+  let _maxWidth = get_img_maxWidth(images, direction)
+  let _maxHeight = get_img_maxHeight(images, direction)
 
   if (direction === 'vertical') {
     let _left = left
 
     images.forEach((image) => {
       let _top = top
+      if (maxHeight) _maxHeight = maxHeight
       if (imgAlign === 'center') {
-        _top += (maxHeight - image.height) / 2
+        _top += (_maxHeight - image.height) / 2
       } else if (imgAlign === 'end') {
-        _top += maxHeight - image.height
+        _top += _maxHeight - image.height
       }
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
@@ -93,10 +106,11 @@ function drawImg(options: DrawImgOptions) {
 
     images.forEach((image) => {
       let _left = left
+      if (maxWidth) _maxWidth = maxWidth
       if (imgAlign === 'center') {
-        _left += (maxWidth - image.width) / 2
+        _left += (_maxWidth - image.width) / 2
       } else if (imgAlign === 'end') {
-        _left += maxWidth - image.width
+        _left += _maxWidth - image.width
       }
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
@@ -200,6 +214,8 @@ export default async function ImageGraphics(options: ImageGraphicsOptions) {
     if (width && height) {
       drawImg({
         ctx,
+        maxWidth: width - (_left + _right),
+        maxHeight: height - (_top + _bottom),
         images: _images,
         top: _top,
         left: _left,
