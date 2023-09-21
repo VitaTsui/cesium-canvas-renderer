@@ -1,4 +1,4 @@
-import loadImage from '../_utils/loadImage'
+import loadImage from '../utils/loadImage'
 
 type Padding = number | [number, number] | [number, number, number, number]
 
@@ -79,8 +79,8 @@ function drawImg(options: DrawImgOptions) {
     top = 0,
     left = 0,
     gap = 0,
-    direction = 'vertical',
-    imgAlign = 'start'
+    direction = 'horizontal',
+    imgAlign = 'center'
   } = options
 
   let _maxWidth = get_img_maxWidth(images, direction)
@@ -134,10 +134,10 @@ export interface ImageGraphicsOptions {
 export default async function ImageGraphics(options: ImageGraphicsOptions) {
   const {
     imgs,
-    direction = 'vertical',
+    direction = 'horizontal',
     padding = 0,
     gap = 0,
-    imgAlign = 'start',
+    imgAlign = 'center',
     width: canvasWidth = 'auto',
     height: canvasHeight = 'auto'
   } = options

@@ -1,11 +1,15 @@
 import { deepCopy } from 'hsu-utils'
-import loadImage from '../_utils/loadImage'
+import loadImage from '../utils/loadImage'
 
 type TextAlign = 'left' | 'center' | 'right'
 
 type Padding = number | [number, number] | [number, number, number, number]
 
 type Radius = number | [number, number, number, number]
+
+type Size = number | 'auto' | 'bgImg'
+
+type Align = 'top' | 'center' | 'bottom'
 
 interface FontStyle {
   style?: string
@@ -15,7 +19,6 @@ interface FontStyle {
   lineHeight?: number
   family?: string
   color?: string
-  padding?: Padding
   rowGap?: number
   textAlign?: TextAlign
   letterSpacing?: number
@@ -271,7 +274,7 @@ function drawText(options: DrawTextOptions) {
   const { ctx, text, maxTextLength, fontStyle: _fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
   const {
     color = '#000',
-    textAlign = 'left',
+    textAlign = 'center',
     style: fontStyle = 'normal',
     variant: fontVariant = 'normal',
     weight: fontWeight = 'normal',
@@ -326,8 +329,9 @@ export interface TextGraphicsOptions {
   borderStyle?: BorderStyle
   backgroundStyle?: BackgroundStyle
   fontStyle?: FontStyle
-  width?: number | 'auto'
-  height?: number | 'auto'
+  padding?: Padding
+  size?: Size | [Size, Size]
+  align?: Align
 }
 export default async function TextGraphics(options: TextGraphicsOptions): Promise<HTMLCanvasElement> {
   const {
@@ -335,11 +339,13 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
     borderStyle = {},
     backgroundStyle = {},
     fontStyle = {},
-    width: canvasWidth = 'auto',
-    height: canvasHeight = 'auto'
+    size: canvasSize = ['auto', 'auto'],
+    padding = 0,
+    align = 'center'
   } = options
   const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
-  const { size: fontSize = 12, padding = 0, rowGap = 0, letterSpacing = 0 } = fontStyle
+  const { size: fontSize = 12, rowGap = 0, letterSpacing = 0 } = fontStyle
+  const { image: backgroundImage } = backgroundStyle
 
   let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
   if (Array.isArray(padding)) {
@@ -360,14 +366,27 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
   }
 
   let [width, height] = [0, 0]
+  const _canvasSize = Array.isArray(canvasSize) ? canvasSize : [canvasSize, canvasSize]
+  const [canvasWidth, canvasHeight] = _canvasSize
   if (typeof canvasWidth === 'number') {
     width = canvasWidth
   }
   if (typeof canvasHeight === 'number') {
     height = canvasHeight
   }
+  if (backgroundImage) {
+    const image = await loadImage(backgroundImage)
+    if (canvasWidth === 'bgImg') {
+      width = image.width
+    }
+    if (canvasHeight === 'bgImg') {
+      height = image.height
+    }
+  }
+
   let _text = content ? (Array.isArray(content) ? deepCopy(content) : [content]) : []
   _text = _text.filter(Boolean)
+
   if (!!_text.length && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
     if (canvasWidth === 'auto') {
       const _maxText = deepCopy(_text).reduce((prev, curr) => {
@@ -382,6 +401,19 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
     if (canvasHeight === 'auto') {
       const _rows = _text.length
       height = _rows * fontSize + (_top + _bottom) + (_rows - 1) * rowGap - (_rows % 2 === 0 ? 2 : 4)
+    }
+  }
+
+  if (!!_text.length && canvasHeight !== 'auto') {
+    const _rows = _text.length
+    const textHeight = _rows * fontSize + (_rows - 1) * rowGap - (_rows % 2 === 0 ? 2 : 4)
+
+    if (align === 'top') {
+      _top = _top
+    } else if (align === 'center') {
+      _top = (height - textHeight) / 2
+    } else if (align === 'bottom') {
+      _top = height - (textHeight + _bottom)
     }
   }
 
