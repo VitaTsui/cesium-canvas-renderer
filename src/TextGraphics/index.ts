@@ -11,6 +11,8 @@ type Size = number | 'auto' | 'bgImg'
 
 type Align = 'top' | 'center' | 'bottom'
 
+type Fill = 'ctx' | 'img'
+
 interface FontStyle {
   style?: string
   variant?: string
@@ -41,6 +43,7 @@ interface BackgroundStyle {
   image?: string
   size?: [string, string] | string
   position?: [number, number] | number
+  fill?: Fill
 }
 
 /**
@@ -79,7 +82,8 @@ async function drawCtx(options: DrawCtxOptions) {
     color: backgroundColor,
     image: backgroundImage,
     size: backgroundSize,
-    position: backgroundPosition
+    position: backgroundPosition,
+    fill: backgroundFill = 'ctx'
   } = backgroundStyle
 
   if (!backgroundColor && !backgroundImage) {
@@ -153,7 +157,14 @@ async function drawCtx(options: DrawCtxOptions) {
       }
     }
 
-    let [_width, _height] = [image.width, image.height]
+    let [_width, _height] = [0, 0]
+    if (backgroundFill === 'ctx') {
+      ;[_width, _height] = [width, height]
+    }
+    if (backgroundFill === 'img') {
+      ;[_width, _height] = [image.width, image.height]
+    }
+
     if (backgroundSize) {
       let [_w_size, _h_size] = ['', '']
       if (Array.isArray(backgroundSize)) {
