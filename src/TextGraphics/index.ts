@@ -37,7 +37,7 @@ interface FontStyle {
   textAlign?: TextAlign
   letterSpacing?: number
   border?: TextBorderStyle
-  shadow?: TextShadowStyle
+  shadow?: TextShadowStyle | TextShadowStyle[]
 }
 
 interface BorderStyle {
@@ -305,16 +305,10 @@ function drawText(options: DrawTextOptions) {
     lineHeight = 1,
     family: fontFamily = '微软雅黑',
     border = {},
-    shadow = {},
+    shadow,
     letterSpacing = 0
   } = _fontStyle
   const { color: borderColor = '#000', width: borderWidth = 0 } = border
-  const {
-    color: shadowColor = '',
-    blur: shadowBlur = 0,
-    offsetX: shadowOffsetX = 0,
-    offsetY: shadowOffsetY = 0
-  } = shadow
 
   ctx.font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize}px/${lineHeight} ${fontFamily}`
   ctx.fillStyle = color
@@ -322,10 +316,6 @@ function drawText(options: DrawTextOptions) {
   ctx.textBaseline = 'middle'
   ctx.strokeStyle = borderColor
   ctx.lineWidth = borderWidth
-  ctx.shadowColor = shadowColor
-  ctx.shadowBlur = shadowBlur
-  ctx.shadowOffsetX = shadowOffsetX
-  ctx.shadowOffsetY = shadowOffsetY
 
   let _maxTextLength = 0
   if (!!text.length) {
@@ -353,6 +343,33 @@ function drawText(options: DrawTextOptions) {
 
     drawRowText(ctx, _text, _textLeft, _textTop, fontSize, borderWidth, letterSpacing)
   })
+
+  if (shadow) {
+    const _shadow = Array.isArray(shadow) ? shadow : [shadow]
+
+    _shadow.forEach((shadow) => {
+      const {
+        color: shadowColor = '#000',
+        blur: shadowBlur = 0,
+        offsetX: shadowOffsetX = 0,
+        offsetY: shadowOffsetY = 0
+      } = shadow
+      ctx.shadowColor = shadowColor
+      ctx.shadowBlur = shadowBlur
+      ctx.shadowOffsetX = shadowOffsetX
+      ctx.shadowOffsetY = shadowOffsetY
+
+      text.forEach((_text, idx) => {
+        let _textLeft = _left
+        const _textLenth = get_string_width(_text) * fontSize + (_text.length - 1) * letterSpacing
+        _textLeft += _calculateLeft(_maxTextLength, _textLenth, textAlign)
+
+        const _textTop = _top + fontSize * idx + rowGap * idx
+
+        drawRowText(ctx, _text, _textLeft, _textTop, fontSize, borderWidth, letterSpacing)
+      })
+    })
+  }
 }
 
 /**
