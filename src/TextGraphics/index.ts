@@ -13,6 +13,18 @@ type Align = 'top' | 'center' | 'bottom'
 
 type Fill = 'ctx' | 'img'
 
+interface TextShadowStyle {
+  color?: string
+  blur?: number
+  offsetX?: number
+  offsetY?: number
+}
+
+interface TextBorderStyle {
+  color?: string
+  width?: number
+}
+
 interface FontStyle {
   style?: string
   variant?: string
@@ -24,8 +36,8 @@ interface FontStyle {
   rowGap?: number
   textAlign?: TextAlign
   letterSpacing?: number
-  borderColor?: string
-  borderWidth?: number
+  border?: TextBorderStyle
+  shadow?: TextShadowStyle
 }
 
 interface BorderStyle {
@@ -292,10 +304,17 @@ function drawText(options: DrawTextOptions) {
     size: fontSize = 12,
     lineHeight = 1,
     family: fontFamily = '微软雅黑',
-    borderColor = '#000',
-    borderWidth = 0,
+    border = {},
+    shadow = {},
     letterSpacing = 0
   } = _fontStyle
+  const { color: borderColor = '#000', width: borderWidth = 0 } = border
+  const {
+    color: shadowColor = '',
+    blur: shadowBlur = 0,
+    offsetX: shadowOffsetX = 0,
+    offsetY: shadowOffsetY = 0
+  } = shadow
 
   ctx.font = `${fontStyle} ${fontVariant} ${fontWeight} ${fontSize}px/${lineHeight} ${fontFamily}`
   ctx.fillStyle = color
@@ -303,6 +322,10 @@ function drawText(options: DrawTextOptions) {
   ctx.textBaseline = 'middle'
   ctx.strokeStyle = borderColor
   ctx.lineWidth = borderWidth
+  ctx.shadowColor = shadowColor
+  ctx.shadowBlur = shadowBlur
+  ctx.shadowOffsetX = shadowOffsetX
+  ctx.shadowOffsetY = shadowOffsetY
 
   let _maxTextLength = 0
   if (!!text.length) {
