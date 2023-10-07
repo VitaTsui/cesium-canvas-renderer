@@ -1737,10 +1737,10 @@ has@^1.0.3:
   dependencies:
     function-bind "^1.1.1"
 
-hsu-utils@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/hsu-utils/-/hsu-utils-0.0.5.tgz#a717870228c1a103cba960f6ca7d06177cc5ede1"
-  integrity sha512-Ey2uovBCDg/7oe7bO/4ncphxWHq0fEmoMxGpOI8MZsyDE99w3jVUoZQvOm8z4xGM4DGfljRo6Uf4W5tuKMbKXA==
+hsu-utils@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/hsu-utils/-/hsu-utils-0.0.7.tgz#62bf5c3edab26d30f7118114821361cfb11cb1cb"
+  integrity sha512-smCXy+H9wOJjBHetjAJw4nXQ2IexD5Th7cyX7ASR15Vo/deMsMZxaAVRLfytv83SmUyFtIG6vb53zMPz2eEEhQ==
 
 html-encoding-sniffer@^3.0.0:
   version "3.0.0"
