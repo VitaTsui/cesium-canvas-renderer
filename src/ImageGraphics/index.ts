@@ -10,12 +10,15 @@ interface ImageItem {
   url: string
   width?: number
   height?: number
+  zIndex?: number
 }
 
 interface ImageElement {
   image: HTMLImageElement
   width: number
   height: number
+  zIndex: number
+  index: number
 }
 
 /**
@@ -24,11 +27,11 @@ interface ImageElement {
 function get_img_maxWidth(images: ImageElement[], direction: Direction) {
   let width = 0
 
-  if (direction === 'vertical') {
+  if (direction === 'horizontal') {
     width = images.reduce((prev, curr) => {
       return prev + curr.width
     }, 0)
-  } else if (direction === 'horizontal') {
+  } else if (direction === 'vertical') {
     width = images.reduce((prev, curr) => {
       return prev.width > curr.width ? prev : curr
     }).width
@@ -43,11 +46,11 @@ function get_img_maxWidth(images: ImageElement[], direction: Direction) {
 function get_img_maxHeight(images: ImageElement[], direction: Direction) {
   let height = 0
 
-  if (direction === 'vertical') {
+  if (direction === 'horizontal') {
     height = images.reduce((prev, curr) => {
       return prev.height > curr.height ? prev : curr
     }).height
-  } else if (direction === 'horizontal') {
+  } else if (direction === 'vertical') {
     height = images.reduce((prev, curr) => {
       return prev + curr.height
     }, 0)
@@ -79,17 +82,20 @@ function drawImg(options: DrawImgOptions) {
     top = 0,
     left = 0,
     gap = 0,
-    direction = 'horizontal',
+    direction = 'vertical',
     imgAlign = 'center'
   } = options
 
   let _maxWidth = get_img_maxWidth(images, direction)
   let _maxHeight = get_img_maxHeight(images, direction)
 
-  if (direction === 'vertical') {
-    let _left = left
+  const _images = images.sort((a, b) => a.zIndex - b.zIndex)
 
-    images.forEach((image) => {
+  if (direction === 'horizontal') {
+    _images.forEach((image) => {
+      let _left =
+        left + _images.filter((img) => img.index < image.index).reduce((a, b) => a + b.width, 0) + image.index * gap
+
       let _top = top
       if (maxHeight) _maxHeight = maxHeight
       if (imgAlign === 'center') {
@@ -99,12 +105,12 @@ function drawImg(options: DrawImgOptions) {
       }
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
-      _left += image.width + gap
     })
-  } else if (direction === 'horizontal') {
-    let _top = top
+  } else if (direction === 'vertical') {
+    _images.forEach((image) => {
+      let _top =
+        top + _images.filter((img) => img.index < image.index).reduce((a, b) => a + b.height, 0) + image.index * gap
 
-    images.forEach((image) => {
       let _left = left
       if (maxWidth) _maxWidth = maxWidth
       if (imgAlign === 'center') {
@@ -114,7 +120,6 @@ function drawImg(options: DrawImgOptions) {
       }
 
       ctx.drawImage(image.image, _left, _top, image.width, image.height)
-      _top += image.height + gap
     })
   }
 }
@@ -134,7 +139,7 @@ export interface ImageGraphicsOptions {
 export default async function ImageGraphics(options: ImageGraphicsOptions) {
   const {
     imgs,
-    direction = 'horizontal',
+    direction = 'vertical',
     padding = 0,
     gap = 0,
     imgAlign = 'center',
@@ -152,15 +157,18 @@ export default async function ImageGraphics(options: ImageGraphicsOptions) {
     const _images: ImageElement[] = []
     for (const img of _imgs) {
       if (typeof img === 'string') {
+        const index = _imgs.indexOf(img)
         const image = await loadImage(img)
         _images.push({
           image,
           width: image.width,
-          height: image.height
+          height: image.height,
+          zIndex: 0,
+          index
         })
       } else {
+        const index = (_imgs as ImageItem[]).findIndex((v) => v.url === img.url)
         let [imgWidth, imgHeight] = [0, 0]
-
         const image = await loadImage(img.url)
         imgWidth = img.width || image.width
         imgHeight = img.height || image.height
@@ -168,7 +176,9 @@ export default async function ImageGraphics(options: ImageGraphicsOptions) {
         _images.push({
           image,
           width: imgWidth,
-          height: imgHeight
+          height: imgHeight,
+          zIndex: img?.zIndex ?? 0,
+          index
         })
       }
     }
@@ -197,14 +207,12 @@ export default async function ImageGraphics(options: ImageGraphicsOptions) {
 
       if (canvasWidth === 'auto') {
         width =
-          get_img_maxWidth(_images, direction) + (_left + _right) + (direction === 'vertical' ? (_rows - 1) * gap : 0)
+          get_img_maxWidth(_images, direction) + (_left + _right) + (direction === 'horizontal' ? (_rows - 1) * gap : 0)
       }
 
       if (canvasHeight === 'auto') {
         height =
-          get_img_maxHeight(_images, direction) +
-          (_top + _bottom) +
-          (direction === 'horizontal' ? (_rows - 1) * gap : 0)
+          get_img_maxHeight(_images, direction) + (_top + _bottom) + (direction === 'vertical' ? (_rows - 1) * gap : 0)
       }
     }
 
