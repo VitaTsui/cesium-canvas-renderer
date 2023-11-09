@@ -88,13 +88,13 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
 
     if (canvasHeight === 'auto') {
       const _rows = _text.length
-      height = _rows * fontSize + (_top + _bottom) + (_rows - 1) * rowGap - (_rows % 2 === 0 ? 2 : 4)
+      height = _rows * fontSize + (_top + _bottom) + (_rows - 1) * rowGap
     }
   }
 
   if (!!_text.length && canvasHeight !== 'auto') {
     const _rows = _text.length
-    const textHeight = _rows * fontSize + (_rows - 1) * rowGap - (_rows % 2 === 0 ? 2 : 4)
+    const textHeight = _rows * fontSize + (_rows - 1) * rowGap
 
     if (align === 'top') {
       _top = _top
