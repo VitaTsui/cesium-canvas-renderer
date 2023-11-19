@@ -4,6 +4,8 @@ type Fill = 'ctx' | 'img'
 
 type Radius = number | [number, number, number, number]
 
+type Direction = 'vertical' | 'horizontal'
+
 interface LinearGradient {
   [key: number]: string
 }
@@ -14,6 +16,7 @@ export interface BackgroundStyle {
   size?: [string, string] | string
   position?: [number, number] | number
   fill?: Fill
+  colorDirection?: Direction
 }
 
 export interface DrawCtxOptions {
@@ -31,7 +34,8 @@ export default async function drawCtx(options: DrawCtxOptions) {
     image: backgroundImage,
     size: backgroundSize,
     position: backgroundPosition,
-    fill: backgroundFill = 'ctx'
+    fill: backgroundFill = 'ctx',
+    colorDirection = 'horizontal'
   } = backgroundStyle
 
   if (!backgroundColor && !backgroundImage) {
@@ -82,7 +86,9 @@ export default async function drawCtx(options: DrawCtxOptions) {
     if (typeof backgroundColor === 'string') {
       ctx.fillStyle = backgroundColor
     } else {
-      const gradient = ctx.createLinearGradient(0, 0, width, height)
+      const _width = colorDirection === 'vertical' ? 0 : width
+      const _height = colorDirection === 'horizontal' ? 0 : height
+      const gradient = ctx.createLinearGradient(0, 0, _width, _height)
       Object.keys(backgroundColor).forEach((key) => {
         const color = backgroundColor[+key]
         gradient.addColorStop(+key, color)
