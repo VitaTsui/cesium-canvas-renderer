@@ -31,7 +31,18 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
     align = 'center'
   } = options
   const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
-  const { font = {}, rowGap = 0, letterSpacing = 0 } = fontStyle
+  const {
+    font = {
+      style: 'normal',
+      variant: 'normal',
+      weight: 'normal',
+      size: 12,
+      lineHeight: 1,
+      family: '微软雅黑'
+    },
+    rowGap = 0,
+    letterSpacing = 0
+  } = fontStyle
   const { size: fontSize = 12 } = font
   const { image: backgroundImage } = backgroundStyle
 
@@ -78,12 +89,12 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
   if (!!_text.length && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
     if (canvasWidth === 'auto') {
       const _maxText = deepCopy(_text).reduce((prev, curr) => {
-        const prevLength = get_string_width(prev)
-        const currLength = get_string_width(curr)
+        const prevLength = get_string_width(prev, font)
+        const currLength = get_string_width(curr, font)
         return prevLength > currLength ? prev : curr
       })
-      const _maxTextWidth = get_string_width(_maxText)
-      width = _maxTextWidth * fontSize + (_left + _right) + (_maxText.length - 1) * letterSpacing
+      const _maxTextWidth = get_string_width(_maxText, font)
+      width = _maxTextWidth + (_left + _right) + (_maxText.length - 1) * letterSpacing
     }
 
     if (canvasHeight === 'auto') {

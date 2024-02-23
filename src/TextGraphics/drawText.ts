@@ -37,12 +37,6 @@ export interface FontStyle {
   shadow?: TextShadowStyle | TextShadowStyle[]
 }
 
-function get_char_width(char: string): number {
-  const width = char.charCodeAt(0) < 128 && char.charCodeAt(0) >= 0 ? 0.5 : 1
-
-  return width
-}
-
 function _calculateLeft(maxTextLength: number, textLenth: number, textAlign: TextAlign) {
   let _left = 0
 
@@ -65,9 +59,10 @@ interface DrawRowText {
   borderWidth: number
   letterSpacing: number
   color: string | LinearGradient
+  font: Font
 }
 function drawRowText(options: DrawRowText) {
-  const { ctx, text, left, top, size, borderWidth, letterSpacing, color } = options
+  const { ctx, text, left, top, size, borderWidth, letterSpacing, color, font } = options
 
   let [_left, _top] = [left, top]
 
@@ -87,7 +82,7 @@ function drawRowText(options: DrawRowText) {
     if (borderWidth) {
       ctx.strokeText(char, _left, _top)
     }
-    _left += size * get_char_width(char) + letterSpacing
+    _left += get_string_width(char, font) + letterSpacing
   }
 }
 
@@ -122,12 +117,12 @@ export default function drawText(options: DrawTextOptions) {
   let _maxTextLength = 0
   if (!!text.length) {
     const _maxText = deepCopy(text).reduce((prev, curr) => {
-      const prevLength = get_string_width(prev)
-      const currLength = get_string_width(curr)
+      const prevLength = get_string_width(prev, font)
+      const currLength = get_string_width(curr, font)
       return prevLength > currLength ? prev : curr
     })
-    const _maxTextWidth = get_string_width(_maxText)
-    _maxTextLength = _maxTextWidth * size + (_maxText.length - 1) * letterSpacing
+    const _maxTextWidth = get_string_width(_maxText, font)
+    _maxTextLength = _maxTextWidth + (_maxText.length - 1) * letterSpacing
   }
   if (maxTextLength) {
     _maxTextLength = maxTextLength
@@ -138,12 +133,22 @@ export default function drawText(options: DrawTextOptions) {
 
   text.forEach((_text, idx) => {
     let _textLeft = _left
-    const _textLenth = get_string_width(_text) * size + (_text.length - 1) * letterSpacing
+    const _textLenth = get_string_width(_text, font) + (_text.length - 1) * letterSpacing
     _textLeft += _calculateLeft(_maxTextLength, _textLenth, textAlign)
 
     const _textTop = _top + size * idx + rowGap * idx
 
-    drawRowText({ ctx, text: _text, left: _textLeft, top: _textTop, size, borderWidth, letterSpacing, color })
+    drawRowText({
+      ctx,
+      text: _text,
+      left: _textLeft,
+      top: _textTop,
+      size,
+      borderWidth,
+      letterSpacing,
+      color,
+      font
+    })
   })
 
   if (shadow) {
@@ -163,12 +168,22 @@ export default function drawText(options: DrawTextOptions) {
 
       text.forEach((_text, idx) => {
         let _textLeft = _left
-        const _textLenth = get_string_width(_text) * size + (_text.length - 1) * letterSpacing
+        const _textLenth = get_string_width(_text, font) + (_text.length - 1) * letterSpacing
         _textLeft += _calculateLeft(_maxTextLength, _textLenth, textAlign)
 
         const _textTop = _top + size * idx + rowGap * idx
 
-        drawRowText({ ctx, text: _text, left: _textLeft, top: _textTop, size, borderWidth, letterSpacing, color })
+        drawRowText({
+          ctx,
+          text: _text,
+          left: _textLeft,
+          top: _textTop,
+          size,
+          borderWidth,
+          letterSpacing,
+          color,
+          font
+        })
       })
     })
   }

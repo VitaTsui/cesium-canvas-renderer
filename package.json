@@ -1,6 +1,6 @@
 {
   "name": "@hsu-cesium/canvas-renderer",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "some cesium utils",
   "repository": "git@github.com:VitaTsui/cesium-canvas-renderer.git",
   "author": "VitaHsu <vitahsu7@gmail.com>",
@@ -56,6 +56,6 @@
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
-    "hsu-utils": "^0.0.7"
+    "hsu-utils": "^0.0.10"
   }
 }
