@@ -12,9 +12,9 @@ const config = {
   entry: ['./src/index.ts'],
   output: {
     path: path.resolve(__dirname, '../dist'),
-    filename: devMode ? 'cesium-canvas-renderer.js' : 'cesium-canvas-renderer.min.js',
+    filename: devMode ? 'canvas-renderer.js' : 'canvas-renderer.min.js',
     globalObject: 'this',
-    library: 'cesium-canvas-renderer',
+    library: 'canvas-renderer',
     libraryTarget: 'umd'
   },
   module: {
@@ -35,7 +35,7 @@ const config = {
   },
   plugins: [
     new webpack.BannerPlugin(
-      `\ncesium-canvas-renderer v${pkg.version} \n\n${pkg.description} \n\n${fs.readFileSync(path.join(process.cwd(), 'LICENSE'))}`
+      `\ncanvas-renderer v${pkg.version} \n\n${pkg.description} \n\n${fs.readFileSync(path.join(process.cwd(), 'LICENSE'))}`
     ),
   ],
   optimization: {

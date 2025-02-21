@@ -1,8 +1,8 @@
-# [Cesium Canvas Renderer](https://github.com/VitaTsui/cesium-canvas-renderer#cesium-canvas-renderer)
+# [Canvas Renderer](https://github.com/VitaTsui/canvas-renderer#canvas-renderer)
 
 ## 前言
 
-`cesium-canvas-renderer` 一些生成 canvas 的渲染器
+`canvas-renderer` 一些生成 canvas 的渲染器
 
 ## 安装
 

@@ -127,7 +127,7 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
     drawBorder({ ctx, width, height, borderStyle })
 
     if (_text) {
-      drawText({
+      await drawText({
         ctx,
         maxTextLength: width - (_left + _right),
         text: _text,
