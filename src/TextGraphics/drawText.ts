@@ -95,7 +95,7 @@ interface DrawTextOptions {
   left?: number
   rowGap?: number
 }
-export default function drawText(options: DrawTextOptions) {
+export default async function drawText(options: DrawTextOptions) {
   const { ctx, text, maxTextLength, fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
   const { color = '#000', textAlign = 'center', font = {}, border = {}, shadow, letterSpacing = 0 } = fontStyle
   const { color: borderColor = '#000', width: borderWidth = 0 } = border
@@ -107,6 +107,8 @@ export default function drawText(options: DrawTextOptions) {
     lineHeight = 1,
     family: fontFamily = '微软雅黑'
   } = font
+
+  await document.fonts.load(`${style} ${variant} ${weight} ${size}px/${lineHeight} ${fontFamily}`)
 
   ctx.font = `${style} ${variant} ${weight} ${size}px/${lineHeight} ${fontFamily}`
   ctx.textAlign = 'left'
