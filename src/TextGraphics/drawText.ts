@@ -109,7 +109,7 @@ export default async function drawText(options: DrawTextOptions) {
 
   await document.fonts.load(`${style} ${variant} ${weight} ${size}px ${fontFamily}`)
 
-  ctx.font = `${style} ${variant} ${weight} ${fontFamily}`
+  ctx.font = `${style} ${variant} ${weight} ${size}px ${fontFamily}`
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
   ctx.strokeStyle = borderColor
