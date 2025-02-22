@@ -86,8 +86,6 @@ yarn add @hsu-canvas/renderer
 
 > type Radius = number | [number, number, number, number]
 
----
-
 #### LinearGradient
 
 ```ts
@@ -139,6 +137,8 @@ interface LinearGradient {
 | blur    | 阴影模糊度       | number | 0      | -    |
 | offsetX | 阴影水平偏移距离 | number | 0      | -    |
 | offsetY | 阴影垂直偏移距离 | number | 0      | -    |
+
+---
 
 ### ImageGraphics
 
