@@ -88,11 +88,11 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
   if (!!_text.length && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
     if (canvasWidth === 'auto') {
       const _maxText = deepCopy(_text).reduce((prev, curr) => {
-        const prevLength = get_string_width(prev, font)
-        const currLength = get_string_width(curr, font)
+        const prevLength = get_string_width(prev, { ...font, size: fontSize })
+        const currLength = get_string_width(curr, { ...font, size: fontSize })
         return prevLength > currLength ? prev : curr
       })
-      const _maxTextWidth = get_string_width(_maxText, font)
+      const _maxTextWidth = get_string_width(_maxText, { ...font, size: fontSize })
       width = _maxTextWidth + (_left + _right) + (_maxText.length - 1) * letterSpacing
     }
 

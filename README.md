@@ -14,19 +14,17 @@ yarn add @hsu-canvas/renderer
 
 ## 方法
 
-- [**TextGraphics**](#textgraphics) 文本渲染
-- [**ImageGraphics**](#imagegraphics) 图片渲染
-- [**loadImage**](#loadimage) 异步加载图片并缓存
+- [**TextGraphics**](#textgraphics-api) 文本渲染
+- [**ImageGraphics**](#imagegraphics-api) 图片渲染
+- [**loadImage**](#loadimage-api) 异步加载图片并缓存
 
-## API
-
-### TextGraphics
+## TextGraphics API
 
 | 参数    | 说明         | 类型                                        | 默认值 | 备注 |
 | ------- | ------------ | ------------------------------------------- | ------ | ---- |
 | options | 文本渲染参数 | [TextGraphicsOptions](#textgraphicsoptions) | -      | -    |
 
-#### TextGraphicsOptions
+### TextGraphicsOptions
 
 | 参数            | 说明        | 类型                                | 默认值           | 备注                                             |
 | --------------- | ----------- | ----------------------------------- | ---------------- | ------------------------------------------------ |
@@ -39,7 +37,7 @@ yarn add @hsu-canvas/renderer
 | align           | 对齐方式    | [Align](#align)                     | center           | -                                                |
 | rowGap          | 文本间隔    | number                              | 0                | -                                                |
 
-#### BorderStyle
+### BorderStyle
 
 | 参数   | 说明     | 类型              | 默认值 | 备注 |
 | ------ | -------- | ----------------- | ------ | ---- |
@@ -47,7 +45,7 @@ yarn add @hsu-canvas/renderer
 | width  | 边框宽度 | number            | 0      | -    |
 | radius | 边框圆角 | [Radius](#radius) | 0      | -    |
 
-#### BackgroundStyle
+### BackgroundStyle
 
 | 参数           | 说明         | 类型                                        | 默认值     | 备注                |
 | -------------- | ------------ | ------------------------------------------- | ---------- | ------------------- |
@@ -58,7 +56,7 @@ yarn add @hsu-canvas/renderer
 | imagePosition  | 背景图片位置 | [number, number] \| number                  | -          | -                   |
 | imageFill      | 背景填充     | [Fill](#fill)                               | ctx        | 会被 imageSize 覆盖 |
 
-#### FontStyle
+### FontStyle
 
 | 参数          | 说明     | 类型                                                     | 默认值 | 备注 |
 | ------------- | -------- | -------------------------------------------------------- | ------ | ---- |
@@ -70,23 +68,23 @@ yarn add @hsu-canvas/renderer
 | border        | 文字边框 | [TextBorderStyle](#textborderstyle)                      | -      | -    |
 | shadow        | 文字阴影 | [TextShadowStyle](#textshadowstyle) \| TextShadowStyle[] | -      | -    |
 
-#### Padding
+### Padding
 
 > type Padding = number | [number, number] | [number, number, number, number]
 
-#### Size
+### Size
 
 > type Size = number | 'auto' | 'bgImg'
 
-#### Align
+### Align
 
 > type Align = 'top' | 'center' | 'bottom'
 
-#### Radius
+### Radius
 
 > type Radius = number | [number, number, number, number]
 
-#### LinearGradient
+### LinearGradient
 
 ```ts
 interface LinearGradient {
@@ -96,11 +94,11 @@ interface LinearGradient {
 
 > **key** 的范围为 0 - 1
 
-#### Direction
+### Direction
 
 > type Direction = 'vertical' | 'horizontal'
 
-#### Fill
+### Fill
 
 > type Fill = 'ctx' | 'img'
 
@@ -109,7 +107,7 @@ interface LinearGradient {
 | ctx  | 图片大小为 canvas 大小 |
 | img  | 图片大小为图片自身大小 |
 
-#### Font
+### Font
 
 | 参数    | 说明     | 类型   | 默认值   | 备注 |
 | ------- | -------- | ------ | -------- | ---- |
@@ -118,18 +116,18 @@ interface LinearGradient {
 | weight  | 字体粗细 | string | normal   | -    |
 | family  | 字体系列 | string | 微软雅黑 | -    |
 
-#### TextAlign
+### TextAlign
 
 > type TextAlign = 'left' | 'center' | 'right'
 
-#### TextBorderStyle
+### TextBorderStyle
 
 | 参数  | 说明     | 类型   | 默认值 | 备注 |
 | ----- | -------- | ------ | ------ | ---- |
 | color | 边框颜色 | string | #000   | -    |
 | width | 边框宽度 | number | 0      | -    |
 
-#### TextShadowStyle
+### TextShadowStyle
 
 | 参数    | 说明             | 类型   | 默认值 | 备注 |
 | ------- | ---------------- | ------ | ------ | ---- |
@@ -138,15 +136,13 @@ interface LinearGradient {
 | offsetX | 阴影水平偏移距离 | number | 0      | -    |
 | offsetY | 阴影垂直偏移距离 | number | 0      | -    |
 
----
-
-### ImageGraphics
+## ImageGraphics API
 
 | 参数    | 说明         | 类型                 | 默认值 | 备注 |
 | ------- | ------------ | -------------------- | ------ | ---- |
 | options | 图片渲染参数 | ImageGraphicsOptions | -      | -    |
 
-#### ImageGraphicsOptions
+### ImageGraphicsOptions
 
 | 参数      | 说明        | 类型                                                            | 默认值   | 备注                  |
 | --------- | ----------- | --------------------------------------------------------------- | -------- | --------------------- |
@@ -158,7 +154,7 @@ interface LinearGradient {
 | width     | canvas 宽度 | number \| 'auto'                                                | auto     | auto 时为图片最大宽度 |
 | height    | canvas 高度 | number \| 'auto'                                                | auto     | auto 时为图片最大宽度 |
 
-#### ImageItem
+### ImageItem
 
 | 参数   | 说明     | 类型   | 默认值   | 备注 |
 | ------ | -------- | ------ | -------- | ---- |
@@ -167,21 +163,19 @@ interface LinearGradient {
 | height | 高度     | number | 图片高度 | -    |
 | zIndex | 图片层级 | number | 0        | -    |
 
-#### Padding(Image)
+### Padding(Image)
 
 > type Padding = number | [number, number] | [number, number, number, number]
 
-#### Direction(Image)
+### Direction(Image)
 
 > type Direction = 'vertical' | 'horizontal'
 
-#### ImgAlign
+### ImgAlign
 
 > type ImgAlign = 'start' | 'center' | 'end'
 
----
-
-### loadImage
+## loadImage API
 
 | 参数 | 说明     | 类型   | 默认值 | 备注 |
 | ---- | -------- | ------ | ------ | ---- |
