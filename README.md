@@ -86,6 +86,8 @@ yarn add @hsu-canvas/renderer
 
 > type Radius = number | [number, number, number, number]
 
+---
+
 #### LinearGradient
 
 ```ts
@@ -176,6 +178,8 @@ interface LinearGradient {
 #### ImgAlign
 
 > type ImgAlign = 'start' | 'center' | 'end'
+
+---
 
 ### loadImage
 
