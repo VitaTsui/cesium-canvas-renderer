@@ -12,11 +12,11 @@ interface LinearGradient {
 
 export interface BackgroundStyle {
   color?: string | LinearGradient
-  image?: string
-  size?: [string, string] | string
-  position?: [number, number] | number
-  fill?: Fill
   colorDirection?: Direction
+  image?: string
+  imageSize?: [string, string] | string
+  imagePosition?: [number, number] | number
+  imageFill?: Fill
 }
 
 export interface DrawCtxOptions {
@@ -31,11 +31,11 @@ export default async function drawCtx(options: DrawCtxOptions) {
   const { ctx, width, height, radius = 0, backgroundStyle = {} } = options
   const {
     color: backgroundColor,
+    colorDirection = 'horizontal',
     image: backgroundImage,
-    size: backgroundSize,
-    position: backgroundPosition,
-    fill: backgroundFill = 'ctx',
-    colorDirection = 'horizontal'
+    imageSize: backgroundImageSize,
+    imagePosition: backgroundImagePosition,
+    imageFill: backgroundImageFill = 'ctx'
   } = backgroundStyle
 
   if (!backgroundColor && !backgroundImage) {
@@ -97,48 +97,49 @@ export default async function drawCtx(options: DrawCtxOptions) {
     }
 
     ctx.fillRect(0, 0, width, height)
-  }
-
-  if (backgroundImage) {
+  } else if (backgroundImage) {
     const image = await loadImage(backgroundImage)
 
     let [_x, _y] = [0, 0]
-    if (backgroundPosition) {
-      if (Array.isArray(backgroundPosition)) {
-        ;[_x, _y] = backgroundPosition
+    if (backgroundImagePosition) {
+      if (Array.isArray(backgroundImagePosition)) {
+        ;[_x, _y] = backgroundImagePosition
       } else {
-        ;[_x, _y] = [backgroundPosition, backgroundPosition]
+        ;[_x, _y] = [backgroundImagePosition, backgroundImagePosition]
       }
     }
 
     let [_width, _height] = [0, 0]
-    if (backgroundFill === 'ctx') {
+    if (backgroundImageFill === 'ctx') {
       ;[_width, _height] = [width, height]
-    }
-    if (backgroundFill === 'img') {
+    } else if (backgroundImageFill === 'img') {
       ;[_width, _height] = [image.width, image.height]
     }
 
-    if (backgroundSize) {
+    if (backgroundImageSize) {
       let [_w_size, _h_size] = ['', '']
-      if (Array.isArray(backgroundSize)) {
-        ;[_w_size, _h_size] = backgroundSize
+      if (Array.isArray(backgroundImageSize)) {
+        ;[_w_size, _h_size] = backgroundImageSize
       } else {
-        ;[_w_size, _h_size] = [backgroundSize, backgroundSize]
+        ;[_w_size, _h_size] = [backgroundImageSize, backgroundImageSize]
       }
 
       if (!isNaN(+_w_size)) {
         _width = +_w_size
       } else {
         const w_percent = +_w_size.replace('%', '')
-        _width = (w_percent * _width) / 100
+        if (!isNaN(+w_percent)) {
+          _width = (w_percent * width) / 100
+        }
       }
 
       if (!isNaN(+_h_size)) {
         _height = +_h_size
       } else {
         const h_percent = +_h_size.replace('%', '')
-        _height = (h_percent * _height) / 100
+        if (!isNaN(+h_percent)) {
+          _height = (h_percent * height) / 100
+        }
       }
     }
 

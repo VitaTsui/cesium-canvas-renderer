@@ -22,15 +22,13 @@ interface Font {
   style?: string
   variant?: string
   weight?: string
-  size?: number
-  lineHeight?: number
   family?: string
 }
 
 export interface FontStyle {
+  size?: number
   font?: Font
   color?: string | LinearGradient
-  rowGap?: number
   textAlign?: TextAlign
   letterSpacing?: number
   border?: TextBorderStyle
@@ -97,20 +95,21 @@ interface DrawTextOptions {
 }
 export default async function drawText(options: DrawTextOptions) {
   const { ctx, text, maxTextLength, fontStyle = {}, top = 0, left = 0, rowGap = 0 } = options
-  const { color = '#000', textAlign = 'center', font = {}, border = {}, shadow, letterSpacing = 0 } = fontStyle
-  const { color: borderColor = '#000', width: borderWidth = 0 } = border
   const {
-    style = 'normal',
-    variant = 'normal',
-    weight = 'normal',
     size = 12,
-    lineHeight = 1,
-    family: fontFamily = '微软雅黑'
-  } = font
+    color = '#000',
+    textAlign = 'center',
+    font = {},
+    border = {},
+    shadow,
+    letterSpacing = 0
+  } = fontStyle
+  const { color: borderColor = '#000', width: borderWidth = 0 } = border
+  const { style = 'normal', variant = 'normal', weight = 'normal', family: fontFamily = '微软雅黑' } = font
 
-  await document.fonts.load(`${style} ${variant} ${weight} ${size}px/${lineHeight} ${fontFamily}`)
+  await document.fonts.load(`${style} ${variant} ${weight} ${size}px ${fontFamily}`)
 
-  ctx.font = `${style} ${variant} ${weight} ${size}px/${lineHeight} ${fontFamily}`
+  ctx.font = `${style} ${variant} ${weight} ${fontFamily}`
   ctx.textAlign = 'left'
   ctx.textBaseline = 'middle'
   ctx.strokeStyle = borderColor

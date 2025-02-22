@@ -18,6 +18,7 @@ export interface TextGraphicsOptions {
   padding?: Padding
   size?: Size | [Size, Size]
   align?: Align
+  rowGap?: number
 }
 
 export default async function TextGraphics(options: TextGraphicsOptions): Promise<HTMLCanvasElement> {
@@ -28,22 +29,20 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
     fontStyle = {},
     size: canvasSize = ['auto', 'auto'],
     padding = 0,
-    align = 'center'
+    align = 'center',
+    rowGap = 0
   } = options
   const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
   const {
+    size: fontSize = 12,
     font = {
       style: 'normal',
       variant: 'normal',
       weight: 'normal',
-      size: 12,
-      lineHeight: 1,
       family: '微软雅黑'
     },
-    rowGap = 0,
     letterSpacing = 0
   } = fontStyle
-  const { size: fontSize = 12 } = font
   const { image: backgroundImage } = backgroundStyle
 
   let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
