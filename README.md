@@ -88,7 +88,7 @@ yarn add @hsu-canvas/renderer
 
 #### LinearGradient
 
-```json
+```ts
 interface LinearGradient {
   [key: number]: string
 }
