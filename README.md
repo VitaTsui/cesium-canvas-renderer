@@ -186,3 +186,7 @@ interface LinearGradient {
 | 参数 | 说明     | 类型   | 默认值 | 备注 |
 | ---- | -------- | ------ | ------ | ---- |
 | url  | 图片地址 | string | -      | 必填 |
+
+## License
+
+MIT
