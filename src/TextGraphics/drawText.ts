@@ -80,7 +80,7 @@ function drawRowText(options: DrawRowText) {
     if (borderWidth) {
       ctx.strokeText(char, _left, _top)
     }
-    _left += get_string_width(char, font) + letterSpacing
+    _left += get_string_width(char, { ...font, size }) + letterSpacing
   }
 }
 
@@ -118,11 +118,11 @@ export default async function drawText(options: DrawTextOptions) {
   let _maxTextLength = 0
   if (!!text.length) {
     const _maxText = deepCopy(text).reduce((prev, curr) => {
-      const prevLength = get_string_width(prev, font)
-      const currLength = get_string_width(curr, font)
+      const prevLength = get_string_width(prev, { ...font, size })
+      const currLength = get_string_width(curr, { ...font, size })
       return prevLength > currLength ? prev : curr
     })
-    const _maxTextWidth = get_string_width(_maxText, font)
+    const _maxTextWidth = get_string_width(_maxText, { ...font, size })
     _maxTextLength = _maxTextWidth + (_maxText.length - 1) * letterSpacing
   }
   if (maxTextLength) {
@@ -134,7 +134,7 @@ export default async function drawText(options: DrawTextOptions) {
 
   text.forEach((_text, idx) => {
     let _textLeft = _left
-    const _textLenth = get_string_width(_text, font) + (_text.length - 1) * letterSpacing
+    const _textLenth = get_string_width(_text, { ...font, size }) + (_text.length - 1) * letterSpacing
     _textLeft += _calculateLeft(_maxTextLength, _textLenth, textAlign)
 
     const _textTop = _top + size * idx + rowGap * idx
@@ -169,7 +169,7 @@ export default async function drawText(options: DrawTextOptions) {
 
       text.forEach((_text, idx) => {
         let _textLeft = _left
-        const _textLenth = get_string_width(_text, font) + (_text.length - 1) * letterSpacing
+        const _textLenth = get_string_width(_text, { ...font, size }) + (_text.length - 1) * letterSpacing
         _textLeft += _calculateLeft(_maxTextLength, _textLenth, textAlign)
 
         const _textTop = _top + size * idx + rowGap * idx
