@@ -34,15 +34,16 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
   } = options
   const { radius: borderRadius = 0, width: borderWidth = 0 } = borderStyle
   const {
-    size: fontSize = 12,
     font = {
+      size: 10,
       style: 'normal',
       variant: 'normal',
       weight: 'normal',
-      family: '微软雅黑'
+      family: 'sans-serif'
     },
     letterSpacing = 0
   } = fontStyle
+  const { size: fontSize = 10 } = font
   const { image: backgroundImage } = backgroundStyle
 
   let [_top, _right, _bottom, _left] = [0, 0, 0, 0]
@@ -88,11 +89,11 @@ export default async function TextGraphics(options: TextGraphicsOptions): Promis
   if (!!_text.length && (canvasWidth === 'auto' || canvasHeight === 'auto')) {
     if (canvasWidth === 'auto') {
       const _maxText = deepCopy(_text).reduce((prev, curr) => {
-        const prevLength = get_string_width(prev, { ...font, size: fontSize })
-        const currLength = get_string_width(curr, { ...font, size: fontSize })
+        const prevLength = get_string_width(prev, font)
+        const currLength = get_string_width(curr, font)
         return prevLength > currLength ? prev : curr
       })
-      const _maxTextWidth = get_string_width(_maxText, { ...font, size: fontSize })
+      const _maxTextWidth = get_string_width(_maxText, font)
       width = _maxTextWidth + (_left + _right) + (_maxText.length - 1) * letterSpacing
     }
 

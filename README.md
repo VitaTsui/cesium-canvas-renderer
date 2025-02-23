@@ -60,10 +60,9 @@ yarn add @hsu-canvas/renderer
 
 | 参数          | 说明     | 类型                                                     | 默认值 | 备注 |
 | ------------- | -------- | -------------------------------------------------------- | ------ | ---- |
-| size          | 文字大小 | number                                                   | 12     | -    |
 | font          | 字体     | [Font](#font)                                            | -      | -    |
 | color         | 颜色     | string \| [LinearGradient](#lineargradient)              | #000   | -    |
-| textAlign     | 文本对齐 | [TextAlign](#textalign)                                  | center | -    |
+| textAlign     | 文字对齐 | [TextAlign](#textalign)                                  | center | -    |
 | letterSpacing | 文字间隔 | number                                                   | 0      | -    |
 | border        | 文字边框 | [TextBorderStyle](#textborderstyle)                      | -      | -    |
 | shadow        | 文字阴影 | [TextShadowStyle](#textshadowstyle) \| TextShadowStyle[] | -      | -    |
@@ -109,12 +108,13 @@ interface LinearGradient {
 
 ### Font
 
-| 参数    | 说明     | 类型   | 默认值   | 备注 |
-| ------- | -------- | ------ | -------- | ---- |
-| style   | 字体样式 | string | normal   | -    |
-| variant | 字体变体 | string | normal   | -    |
-| weight  | 字体粗细 | string | normal   | -    |
-| family  | 字体系列 | string | 微软雅黑 | -    |
+| 参数    | 说明     | 类型   | 默认值     | 备注 |
+| ------- | -------- | ------ | ---------- | ---- |
+| size    | 字体大小 | number | 10         | -    |
+| style   | 字体样式 | string | normal     | -    |
+| variant | 字体变体 | string | normal     | -    |
+| weight  | 字体粗细 | string | normal     | -    |
+| family  | 字体系列 | string | sans-serif | -    |
 
 ### TextAlign
 
@@ -152,7 +152,7 @@ interface LinearGradient {
 | gap       | 间隔        | number                                                          | 0        | -                     |
 | imgAlign  | 对齐方式    | [ImgAlign](#imgalign)                                           | center   | -                     |
 | width     | canvas 宽度 | number \| 'auto'                                                | auto     | auto 时为图片最大宽度 |
-| height    | canvas 高度 | number \| 'auto'                                                | auto     | auto 时为图片最大宽度 |
+| height    | canvas 高度 | number \| 'auto'                                                | auto     | auto 时为图片最大高度 |
 
 ### ImageItem
 
